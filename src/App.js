@@ -61,6 +61,7 @@ let prevPos = { offsetX: 0, offsetY: 0 }
 let line = []
 let userStrokeStyle = "#EE92C2"
 let canvas
+let image
 
 const App = () => {
   const classes = useStyles()
@@ -123,8 +124,6 @@ const App = () => {
     if (inRoom) {
       emitDrawing(prevPosParam, currPos)
     }
-
-    console.log(prevPosParam, currPos)
     // ctx.save()
     ctx.beginPath()
     // Move the the prevPosition of the mouse
@@ -164,7 +163,6 @@ const App = () => {
       dispatch(updateInRoom(true))
 
       socket.on("connected", () => {
-        console.log(socket.connected)
         dispatch(addKey(socket.id))
         dispatch(connected())
         socket.emit("join room", { id: socket.id, targetId: socket.id })
@@ -192,6 +190,28 @@ const App = () => {
 
       socket.on("user joined", () => {})
     }
+  }
+
+  /**
+   * Handle download button. Combine both canvas and image to get the final image.
+   */
+  const download = () => {
+    // save canvas draw
+    const canvasDraw = canvas.toDataURL()
+    const imgDraw = new Image()
+    imgDraw.src = canvasDraw
+
+    // combine both canvas
+    ctx.drawImage(image, 0, 0)
+    ctx.globalAlpha = 0.5
+    ctx.drawImage(imgDraw, 0, 0)
+    const compositedImg = canvas.toDataURL()
+
+    // download
+    const link = document.createElement("a")
+    link.download = "map_modified.png"
+    link.href = compositedImg
+    link.click()
   }
 
   const join = () => {
@@ -273,18 +293,27 @@ const App = () => {
             accept=".jpg, .jpeg, .png"
             onChange={handleInputFile}
           ></input>
-          <Button onClick={showKey} color="inherit">
-            Show Key
+          <Button onClick={download} color="inherit">
+            Download
           </Button>
-          <TextField
-            id="connection-id"
-            onChange={(e) => setTargetConnectionId(e.target.value)}
-            label="Outlined"
-            variant="outlined"
-          />
-          <Button onClick={join} color="inherit">
-            Join
-          </Button>
+          {inRoom && (
+            <Button onClick={showKey} color="inherit">
+              Show Key
+            </Button>
+          )}
+          {inRoom && (
+            <TextField
+              id="connection-id"
+              onChange={(e) => setTargetConnectionId(e.target.value)}
+              label="Outlined"
+              variant="outlined"
+            />
+          )}
+          {inRoom && (
+            <Button onClick={join} color="inherit">
+              Join
+            </Button>
+          )}
           <Button onClick={connect} color="inherit">
             {buttonConnectText}
           </Button>
@@ -305,7 +334,13 @@ const App = () => {
         />
       </AppBar>
       <div className={classes.mapContainer} id="map-container">
-        <img src={mapFile} alt="map" onLoad={handleImageLoaded} id="mapImage" />
+        <img
+          ref={(ref) => (image = ref)}
+          src={mapFile}
+          alt="map"
+          onLoad={handleImageLoaded}
+          id="mapImage"
+        />
         <canvas
           id="mapCanvas"
           width="200"
