@@ -434,73 +434,72 @@ const App = () => {
           />
         </Toolbar>
       </AppBar>
-      <Grid
-        container
-        alignItems="center"
-        className={classes.drawToolbarContainer}
-      >
-        <div className={classes.shapesContainer}>
-          Shapes
-          <button onClick={() => setDrawingFigure(1)}>Line</button>
-          <button onClick={() => setDrawingFigure(2)}>Rectangle</button>
-          <button onClick={() => setDrawingFigure(3)}>Circle</button>
-        </div>
-        <Divider orientation="vertical" flexItem />
-        <div className={classes.shapesContainer}>
-          Size
-          <button onClick={() => (ctx.lineWidth = 2)}>Line 1</button>
-          <button onClick={() => (ctx.lineWidth = 4)}>Line 2</button>
-          <button onClick={() => (ctx.lineWidth = 6)}>Line 3</button>
-          <button onClick={() => (ctx.lineWidth = 8)}>Line 4</button>
-        </div>
-        <Divider orientation="vertical" flexItem />
-        <div className={classes.colorsContainer}>
-          <div className={classes.colorsOptionsContainer}>
-            <TwitterPicker triangle="hide" onChangeComplete={saveColor} />
-            <div className={classes.colorsSavesContainer}>
-              <button
-                className={classes.colorsSavesButtonClass}
-                onClick={() => {
-                  restoreSavedColor(color0)
-                }}
-                ref={(ref) => (color0 = ref)}
-              ></button>
-              <button
-                className={classes.colorsSavesButtonClass}
-                onClick={() => {
-                  restoreSavedColor(color1)
-                }}
-                ref={(ref) => (color1 = ref)}
-              ></button>
-              <button
-                className={classes.colorsSavesButtonClass}
-                onClick={() => {
-                  restoreSavedColor(color2)
-                }}
-                ref={(ref) => (color2 = ref)}
-              ></button>
-              <button
-                className={classes.colorsSavesButtonClass}
-                onClick={() => {
-                  restoreSavedColor(color3)
-                }}
-                ref={(ref) => (color3 = ref)}
-              ></button>
-              <button
-                className={classes.colorsSavesButtonClass}
-                onClick={() => {
-                  restoreSavedColor(color4)
-                }}
-                ref={(ref) => (color4 = ref)}
-              ></button>
-            </div>
+      {haveMap && (
+        <Grid
+          container
+          alignItems="center"
+          className={classes.drawToolbarContainer}
+        >
+          <div className={classes.shapesContainer}>
+            Shapes
+            <button onClick={() => setDrawingFigure(1)}>Line</button>
+            <button onClick={() => setDrawingFigure(2)}>Rectangle</button>
+            <button onClick={() => setDrawingFigure(3)}>Circle</button>
           </div>
-          <div className={classes.colorsTitleClass}>Color</div>
-        </div>
-      </Grid>
-      {/* <div className={classes.drawToolbarContainer}>
-
-      </div> */}
+          <Divider orientation="vertical" flexItem />
+          <div className={classes.shapesContainer}>
+            Size
+            <button onClick={() => (ctx.lineWidth = 2)}>Line 1</button>
+            <button onClick={() => (ctx.lineWidth = 4)}>Line 2</button>
+            <button onClick={() => (ctx.lineWidth = 6)}>Line 3</button>
+            <button onClick={() => (ctx.lineWidth = 8)}>Line 4</button>
+          </div>
+          <Divider orientation="vertical" flexItem />
+          <div className={classes.colorsContainer}>
+            <div className={classes.colorsOptionsContainer}>
+              <TwitterPicker triangle="hide" onChangeComplete={saveColor} />
+              <div className={classes.colorsSavesContainer}>
+                <button
+                  className={classes.colorsSavesButtonClass}
+                  onClick={() => {
+                    restoreSavedColor(color0)
+                  }}
+                  ref={(ref) => (color0 = ref)}
+                ></button>
+                <button
+                  className={classes.colorsSavesButtonClass}
+                  onClick={() => {
+                    restoreSavedColor(color1)
+                  }}
+                  ref={(ref) => (color1 = ref)}
+                ></button>
+                <button
+                  className={classes.colorsSavesButtonClass}
+                  onClick={() => {
+                    restoreSavedColor(color2)
+                  }}
+                  ref={(ref) => (color2 = ref)}
+                ></button>
+                <button
+                  className={classes.colorsSavesButtonClass}
+                  onClick={() => {
+                    restoreSavedColor(color3)
+                  }}
+                  ref={(ref) => (color3 = ref)}
+                ></button>
+                <button
+                  className={classes.colorsSavesButtonClass}
+                  onClick={() => {
+                    restoreSavedColor(color4)
+                  }}
+                  ref={(ref) => (color4 = ref)}
+                ></button>
+              </div>
+            </div>
+            <div className={classes.colorsTitleClass}>Color</div>
+          </div>
+        </Grid>
+      )}
       <div className={classes.mapContainer} id="map-container">
         <img
           ref={(ref) => (image = ref)}
