@@ -1,8 +1,4 @@
-import logo from "./logo.svg"
 import "./App.css"
-import { BrowserRouter, Redirect, Route } from "react-router-dom"
-import Main from "./app/components/Main"
-import { Router } from "@material-ui/icons"
 import {
   AppBar,
   Button,
@@ -10,14 +6,16 @@ import {
   makeStyles,
   Menu,
   MenuItem,
-  Switch,
   TextField,
   Toolbar,
   Typography,
 } from "@material-ui/core"
 import MenuIcon from "@material-ui/icons/Menu"
+import Grid from "@material-ui/core/Grid"
+import Divider from "@material-ui/core/Divider"
+import { TwitterPicker } from "react-color"
 
-import { GoogleLogin, GoogleLogout } from "react-google-login"
+import { GoogleLogin } from "react-google-login"
 import { io } from "socket.io-client"
 
 import { useDispatch, useSelector } from "react-redux"
@@ -27,7 +25,6 @@ import {
   disconnected,
   updateInRoom,
 } from "./app/redux/slices/AppSlice"
-import { selectUserKey } from "./app/redux/selectors/selectors"
 import { useState } from "react"
 import { useEffect } from "react"
 
@@ -50,6 +47,48 @@ const useStyles = makeStyles((theme) => ({
   mapContainer: {
     position: "relative",
   },
+  drawToolbarContainer: {
+    display: "flex",
+    flexDirection: "row",
+    height: "7rem",
+    backgroundColor: "#cfd1e3",
+    border: `1px solid ${theme.palette.divider}`,
+    borderRadius: theme.shape.borderRadius,
+  },
+  shapesContainer: {
+    display: "flex",
+    flexDirection: "column",
+    marginLeft: "2rem",
+    marginRight: "2rem",
+  },
+  colorsOptionsContainer: {
+    display: "flex",
+    flexDirection: "row",
+  },
+  colorsTitleClass: {
+    textAlign: "center",
+  },
+  colorsSavesContainer: {
+    textAlign: "center",
+    display: "flex",
+    paddingTop: "2rem",
+    paddingBottom: "2rem",
+  },
+  colorsSavesButtonClass: {
+    height: "30px",
+    width: "30px",
+    cursor: "pointer",
+    position: "relative",
+    outline: "none",
+    float: "left",
+    borderRadius: "4px",
+    borderWidth: "0",
+    margin: "0px 6px 6px 0px",
+  },
+  // colorsContainer: {
+  //   display: "flex",
+  //   flexDirection: "column",
+  // },
 }))
 
 const clientId =
@@ -62,6 +101,8 @@ let line = []
 let userStrokeStyle = "#EE92C2"
 let canvas
 let image
+let color0, color1, color2, color3, color4
+let colors = []
 
 const App = () => {
   const classes = useStyles()
@@ -72,10 +113,11 @@ const App = () => {
 
   const [anchorEl, setAnchorEl] = useState(null)
   const [ctx, setCtx] = useState(null)
-  const [example, setExample] = useState("")
   const [isPainting, setIsPainting] = useState(false)
   const [mapFile, setMapFile] = useState("")
   const [targetConnectionId, setTargetConnectionId] = useState("")
+  const [haveMap, setHaveMap] = useState(false)
+  const [nextColor, setNextColor] = useState(0)
 
   // ***** Canvas handlers *****
 
@@ -175,7 +217,6 @@ const App = () => {
 
       socket.on("broadcast res", (res) => {
         console.log("broadcast res", res)
-        setExample(res)
       })
 
       socket.on("receiving image", (res) => {
@@ -219,11 +260,6 @@ const App = () => {
     dispatch(updateInRoom(true))
   }
 
-  const emitExample = (data) => {
-    setExample(data)
-    socket.emit("broadcast req", data)
-  }
-
   const handleMenuClick = (event) => {
     setAnchorEl(event.currentTarget)
   }
@@ -236,9 +272,14 @@ const App = () => {
     setAnchorEl(null)
   }
 
+  /**
+   * Handle the load map from file action. If connected to room it will share it.
+   * @param {*} event the input event
+   */
   const handleInputFile = (event) => {
     const img = event.target.files[0]
     setMapFile(URL.createObjectURL(img))
+    setHaveMap(true)
 
     if (inRoom) {
       const reader = new FileReader()
@@ -250,14 +291,48 @@ const App = () => {
   }
 
   const handleImageLoaded = () => {
-    const imgHtmlEl = document.getElementById("mapImage")
-    const mapCanvas = document.getElementById("mapCanvas")
-    mapCanvas.height = imgHtmlEl.height
-    mapCanvas.width = imgHtmlEl.width
+    canvas.height = image.height
+    canvas.width = image.width
   }
 
   const emitImage = (image) => {
     socket.emit("broadcast image", image)
+  }
+
+  /**
+   * Saves the color selected by the user in the color picker storing it inside the button css.
+   * Also, changes the canvas context color
+   * @param {*} color the selected color
+   */
+  const saveColor = (color) => {
+    ctx.strokeStyle = color.hex
+    colors[nextColor] = color.hex
+    switch (nextColor) {
+      case 0:
+        color0.style.backgroundColor = color.hex
+        break
+      case 1:
+        color1.style.backgroundColor = color.hex
+        break
+      case 2:
+        color2.style.backgroundColor = color.hex
+        break
+      case 3:
+        color3.style.backgroundColor = color.hex
+        break
+      case 4:
+        color4.style.backgroundColor = color.hex
+        break
+
+      default:
+        break
+    }
+    if (nextColor + 1 > 4) setNextColor(0)
+    else setNextColor(nextColor + 1)
+  }
+
+  const restoreSavedColor = (button) => {
+    ctx.strokeStyle = button.style.backgroundColor
   }
 
   return (
@@ -296,12 +371,12 @@ const App = () => {
           <Button onClick={download} color="inherit">
             Download
           </Button>
-          {inRoom && (
+          {buttonConnectText === "Disconnect" && (
             <Button onClick={showKey} color="inherit">
               Show Key
             </Button>
           )}
-          {inRoom && (
+          {buttonConnectText === "Disconnect" && (
             <TextField
               id="connection-id"
               onChange={(e) => setTargetConnectionId(e.target.value)}
@@ -309,7 +384,7 @@ const App = () => {
               variant="outlined"
             />
           )}
-          {inRoom && (
+          {buttonConnectText === "Disconnect" && (
             <Button onClick={join} color="inherit">
               Join
             </Button>
@@ -326,16 +401,77 @@ const App = () => {
             responseType="code,token"
           />
         </Toolbar>
-        <TextField
-          label="Outlined"
-          variant="outlined"
-          onChange={(e) => emitExample(e.target.value)}
-          value={example}
-        />
       </AppBar>
+      <Grid
+        container
+        alignItems="center"
+        className={classes.drawToolbarContainer}
+      >
+        <div className={classes.shapesContainer}>
+          Shapes
+          <button>Rectangle</button>
+          <button>Circle</button>
+        </div>
+        <Divider orientation="vertical" flexItem />
+        <div className={classes.shapesContainer}>
+          Size
+          <button>Line 1</button>
+          <button>Line 2</button>
+          <button>Line 3</button>
+          <button>Line 4</button>
+        </div>
+        <Divider orientation="vertical" flexItem />
+        <div className={classes.colorsContainer}>
+          <div className={classes.colorsOptionsContainer}>
+            <TwitterPicker triangle="hide" onChangeComplete={saveColor} />
+            <div className={classes.colorsSavesContainer}>
+              <button
+                className={classes.colorsSavesButtonClass}
+                onClick={() => {
+                  restoreSavedColor(color0)
+                }}
+                ref={(ref) => (color0 = ref)}
+              ></button>
+              <button
+                className={classes.colorsSavesButtonClass}
+                onClick={() => {
+                  restoreSavedColor(color1)
+                }}
+                ref={(ref) => (color1 = ref)}
+              ></button>
+              <button
+                className={classes.colorsSavesButtonClass}
+                onClick={() => {
+                  restoreSavedColor(color2)
+                }}
+                ref={(ref) => (color2 = ref)}
+              ></button>
+              <button
+                className={classes.colorsSavesButtonClass}
+                onClick={() => {
+                  restoreSavedColor(color3)
+                }}
+                ref={(ref) => (color3 = ref)}
+              ></button>
+              <button
+                className={classes.colorsSavesButtonClass}
+                onClick={() => {
+                  restoreSavedColor(color4)
+                }}
+                ref={(ref) => (color4 = ref)}
+              ></button>
+            </div>
+          </div>
+          <div className={classes.colorsTitleClass}>Color</div>
+        </div>
+      </Grid>
+      {/* <div className={classes.drawToolbarContainer}>
+
+      </div> */}
       <div className={classes.mapContainer} id="map-container">
         <img
           ref={(ref) => (image = ref)}
+          hidden={!haveMap}
           src={mapFile}
           alt="map"
           onLoad={handleImageLoaded}
@@ -343,8 +479,7 @@ const App = () => {
         />
         <canvas
           id="mapCanvas"
-          width="200"
-          height="100"
+          hidden={!haveMap}
           className={classes.canvas}
           ref={(ref) => (canvas = ref)}
           onMouseDown={onMouseDown}
