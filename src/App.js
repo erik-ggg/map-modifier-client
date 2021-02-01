@@ -118,6 +118,7 @@ const App = () => {
   const [targetConnectionId, setTargetConnectionId] = useState("")
   const [haveMap, setHaveMap] = useState(false)
   const [nextColor, setNextColor] = useState(0)
+  const [drawingFigure, setDrawingFigure] = useState(0)
 
   // ***** Canvas handlers *****
 
@@ -136,7 +137,7 @@ const App = () => {
   }
 
   const onMouseMove = ({ nativeEvent }) => {
-    if (isPainting) {
+    if (isPainting && drawingFigure === 0) {
       const { offsetX, offsetY } = nativeEvent
       const offSetData = { offsetX, offsetY }
       // Set the start and stop position of the paint event.
@@ -150,9 +151,36 @@ const App = () => {
     }
   }
 
-  const endPaintEvent = () => {
+  const endPaintEvent = ({ nativeEvent }) => {
+    const { offsetX, offsetY } = nativeEvent
+
     if (isPainting) {
       setIsPainting(false)
+    }
+
+    if (drawingFigure === 1) {
+      setDrawingFigure(0)
+      ctx.moveTo(prevPos.offsetX, prevPos.offsetY)
+      ctx.lineTo(offsetX, offsetY)
+      ctx.stroke()
+    } else if (drawingFigure === 2) {
+      ctx.beginPath()
+      ctx.rect(
+        prevPos.offsetX,
+        prevPos.offsetY,
+        offsetX - prevPos.offsetX,
+        offsetY - prevPos.offsetY
+      )
+      ctx.stroke()
+    } else if (drawingFigure === 3) {
+      setDrawingFigure(0)
+      const r = Math.sqrt(
+        Math.pow(offsetX - prevPos.offsetX, 2) +
+          Math.pow(offsetY - prevPos.offsetY, 2)
+      )
+      ctx.beginPath()
+      ctx.arc(prevPos.offsetX, prevPos.offsetY, r, 0, 2 * Math.PI)
+      ctx.stroke()
     }
   }
 
@@ -331,6 +359,10 @@ const App = () => {
     else setNextColor(nextColor + 1)
   }
 
+  /**
+   * Sets the canvas context color as the button background color
+   * @param {*} button the button clicked
+   */
   const restoreSavedColor = (button) => {
     ctx.strokeStyle = button.style.backgroundColor
   }
@@ -409,16 +441,17 @@ const App = () => {
       >
         <div className={classes.shapesContainer}>
           Shapes
-          <button>Rectangle</button>
-          <button>Circle</button>
+          <button onClick={() => setDrawingFigure(1)}>Line</button>
+          <button onClick={() => setDrawingFigure(2)}>Rectangle</button>
+          <button onClick={() => setDrawingFigure(3)}>Circle</button>
         </div>
         <Divider orientation="vertical" flexItem />
         <div className={classes.shapesContainer}>
           Size
-          <button>Line 1</button>
-          <button>Line 2</button>
-          <button>Line 3</button>
-          <button>Line 4</button>
+          <button onClick={() => (ctx.lineWidth = 2)}>Line 1</button>
+          <button onClick={() => (ctx.lineWidth = 4)}>Line 2</button>
+          <button onClick={() => (ctx.lineWidth = 6)}>Line 3</button>
+          <button onClick={() => (ctx.lineWidth = 8)}>Line 4</button>
         </div>
         <Divider orientation="vertical" flexItem />
         <div className={classes.colorsContainer}>
