@@ -4,6 +4,7 @@ let initialState = {
   buttonConnectText: "Connect",
   inRoom: false,
   userKey: undefined,
+  userId: undefined,
 }
 
 const appSlice = createSlice({
@@ -12,6 +13,9 @@ const appSlice = createSlice({
   reducers: {
     addKey: (state, action) => {
       state.userKey = action.payload
+    },
+    addUserId: (state, action) => {
+      state.userId = action.payload
     },
     updateInRoom: (state, action) => {
       state.inRoom = action.payload
@@ -27,6 +31,7 @@ const appSlice = createSlice({
 
 export const {
   addKey,
+  addUserId,
   connected,
   disconnected,
   updateInRoom,

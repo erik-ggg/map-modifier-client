@@ -17,16 +17,20 @@ import { TwitterPicker } from "react-color"
 
 import { GoogleLogin } from "react-google-login"
 import { io } from "socket.io-client"
+import axios from "axios"
 
 import { useDispatch, useSelector } from "react-redux"
 import {
   addKey,
+  addUserId,
   connected,
   disconnected,
   updateInRoom,
 } from "./app/redux/slices/AppSlice"
 import { useState } from "react"
 import { useEffect } from "react"
+import { BrowserRouter as Router, Switch, Route, Link } from "react-router-dom"
+import Colaborators from "./app/components/Colaborators"
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -119,6 +123,8 @@ const App = () => {
   const [haveMap, setHaveMap] = useState(false)
   const [nextColor, setNextColor] = useState(0)
   const [drawingFigure, setDrawingFigure] = useState(0)
+  const [userId, setUserId] = useState(null)
+  const [userMail, setUserMail] = useState(null)
 
   // ***** Canvas handlers *****
 
@@ -207,7 +213,13 @@ const App = () => {
     prevPos = { offsetX, offsetY }
   }
 
-  const handleLoginSuccess = () => {
+  const handleLoginSuccess = (res) => {
+    Object.entries(res.Es).forEach((r) => {
+      const pos = r[1].search("@")
+      if (pos !== -1) setUserMail(r)
+    })
+    setUserId(res.googleId)
+    dispatch(addUserId(res.googleId))
     // dispatch(addKey(generateRandomKey()))
   }
 
@@ -236,6 +248,15 @@ const App = () => {
         dispatch(addKey(socket.id))
         dispatch(connected())
         socket.emit("join room", { id: socket.id, targetId: socket.id })
+        axios
+          .post(`http://localhost:4000/api/users`, {
+            userId: userId,
+            socketId: socket.id,
+            email: userMail,
+          })
+          .then((res) => {
+            console.log(res)
+          })
       })
 
       socket.on("disconnect", () => {
@@ -367,160 +388,170 @@ const App = () => {
     ctx.strokeStyle = button.style.backgroundColor
   }
 
+  const handleColaboratorsPage = () => {}
+
   return (
-    <div className={classes.root}>
-      <AppBar position="static">
-        <Toolbar>
-          <IconButton
-            edge="start"
-            className={classes.menuButton}
-            color="inherit"
-            aria-label="menu"
-            aria-controls="simple-menu"
-            aria-haspopup="true"
-            onClick={handleMenuClick}
-          >
-            <MenuIcon />
-          </IconButton>
-          <Menu
-            id="simple-menu"
-            anchorEl={anchorEl}
-            keepMounted
-            open={Boolean(anchorEl)}
-            onClose={handleMenuClose}
-          >
-            <MenuItem onClick={handleLoadMap}>Load map</MenuItem>
-          </Menu>
-          <Typography variant="h6" className={classes.title}>
-            Editor
-          </Typography>
-          <input
-            type="file"
-            id="file-selector"
-            accept=".jpg, .jpeg, .png"
-            onChange={handleInputFile}
-          ></input>
-          <Button onClick={download} color="inherit">
-            Download
-          </Button>
-          {buttonConnectText === "Disconnect" && (
-            <Button onClick={showKey} color="inherit">
-              Show Key
+    <Router>
+      <div className={classes.root}>
+        <AppBar position="static">
+          <Toolbar>
+            <IconButton
+              edge="start"
+              className={classes.menuButton}
+              color="inherit"
+              aria-label="menu"
+              aria-controls="simple-menu"
+              aria-haspopup="true"
+              onClick={handleMenuClick}
+            >
+              <MenuIcon />
+            </IconButton>
+            <Menu
+              id="simple-menu"
+              anchorEl={anchorEl}
+              keepMounted
+              open={Boolean(anchorEl)}
+              onClose={handleMenuClose}
+            >
+              <MenuItem onClick={handleLoadMap}>Load map</MenuItem>
+              <MenuItem>
+                <Link to="/colaborators">Colaborators</Link>
+              </MenuItem>
+            </Menu>
+            <Typography variant="h6" className={classes.title}>
+              Editor
+            </Typography>
+            <input
+              type="file"
+              id="file-selector"
+              accept=".jpg, .jpeg, .png"
+              onChange={handleInputFile}
+            ></input>
+            <Button onClick={download} color="inherit">
+              Download
             </Button>
-          )}
-          {buttonConnectText === "Disconnect" && (
-            <TextField
-              id="connection-id"
-              onChange={(e) => setTargetConnectionId(e.target.value)}
-              label="Outlined"
-              variant="outlined"
+            {buttonConnectText === "Disconnect" && (
+              <Button onClick={showKey} color="inherit">
+                Show Key
+              </Button>
+            )}
+            {buttonConnectText === "Disconnect" && (
+              <TextField
+                id="connection-id"
+                onChange={(e) => setTargetConnectionId(e.target.value)}
+                label="Outlined"
+                variant="outlined"
+              />
+            )}
+            {buttonConnectText === "Disconnect" && (
+              <Button onClick={join} color="inherit">
+                Join
+              </Button>
+            )}
+            <Button onClick={connect} color="inherit">
+              {buttonConnectText}
+            </Button>
+            <GoogleLogin
+              clientId={clientId}
+              buttonText="Login"
+              onSuccess={handleLoginSuccess}
+              onFailure={handleLoginFailure}
+              cookiePolicy={"single_host_origin"}
+              responseType="code,token"
             />
-          )}
-          {buttonConnectText === "Disconnect" && (
-            <Button onClick={join} color="inherit">
-              Join
-            </Button>
-          )}
-          <Button onClick={connect} color="inherit">
-            {buttonConnectText}
-          </Button>
-          <GoogleLogin
-            clientId={clientId}
-            buttonText="Login"
-            onSuccess={handleLoginSuccess}
-            onFailure={handleLoginFailure}
-            cookiePolicy={"single_host_origin"}
-            responseType="code,token"
-          />
-        </Toolbar>
-      </AppBar>
-      {haveMap && (
-        <Grid
-          container
-          alignItems="center"
-          className={classes.drawToolbarContainer}
-        >
-          <div className={classes.shapesContainer}>
-            Shapes
-            <button onClick={() => setDrawingFigure(1)}>Line</button>
-            <button onClick={() => setDrawingFigure(2)}>Rectangle</button>
-            <button onClick={() => setDrawingFigure(3)}>Circle</button>
-          </div>
-          <Divider orientation="vertical" flexItem />
-          <div className={classes.shapesContainer}>
-            Size
-            <button onClick={() => (ctx.lineWidth = 2)}>Line 1</button>
-            <button onClick={() => (ctx.lineWidth = 4)}>Line 2</button>
-            <button onClick={() => (ctx.lineWidth = 6)}>Line 3</button>
-            <button onClick={() => (ctx.lineWidth = 8)}>Line 4</button>
-          </div>
-          <Divider orientation="vertical" flexItem />
-          <div className={classes.colorsContainer}>
-            <div className={classes.colorsOptionsContainer}>
-              <TwitterPicker triangle="hide" onChangeComplete={saveColor} />
-              <div className={classes.colorsSavesContainer}>
-                <button
-                  className={classes.colorsSavesButtonClass}
-                  onClick={() => {
-                    restoreSavedColor(color0)
-                  }}
-                  ref={(ref) => (color0 = ref)}
-                ></button>
-                <button
-                  className={classes.colorsSavesButtonClass}
-                  onClick={() => {
-                    restoreSavedColor(color1)
-                  }}
-                  ref={(ref) => (color1 = ref)}
-                ></button>
-                <button
-                  className={classes.colorsSavesButtonClass}
-                  onClick={() => {
-                    restoreSavedColor(color2)
-                  }}
-                  ref={(ref) => (color2 = ref)}
-                ></button>
-                <button
-                  className={classes.colorsSavesButtonClass}
-                  onClick={() => {
-                    restoreSavedColor(color3)
-                  }}
-                  ref={(ref) => (color3 = ref)}
-                ></button>
-                <button
-                  className={classes.colorsSavesButtonClass}
-                  onClick={() => {
-                    restoreSavedColor(color4)
-                  }}
-                  ref={(ref) => (color4 = ref)}
-                ></button>
-              </div>
+          </Toolbar>
+        </AppBar>
+        {haveMap && (
+          <Grid
+            container
+            alignItems="center"
+            className={classes.drawToolbarContainer}
+          >
+            <div className={classes.shapesContainer}>
+              Shapes
+              <button onClick={() => setDrawingFigure(1)}>Line</button>
+              <button onClick={() => setDrawingFigure(2)}>Rectangle</button>
+              <button onClick={() => setDrawingFigure(3)}>Circle</button>
             </div>
-            <div className={classes.colorsTitleClass}>Color</div>
-          </div>
-        </Grid>
-      )}
-      <div className={classes.mapContainer} id="map-container">
-        <img
-          ref={(ref) => (image = ref)}
-          hidden={!haveMap}
-          src={mapFile}
-          alt="map"
-          onLoad={handleImageLoaded}
-          id="mapImage"
-        />
-        <canvas
-          id="mapCanvas"
-          hidden={!haveMap}
-          className={classes.canvas}
-          ref={(ref) => (canvas = ref)}
-          onMouseDown={onMouseDown}
-          onMouseLeave={endPaintEvent}
-          onMouseUp={endPaintEvent}
-          onMouseMove={onMouseMove}
-        ></canvas>
+            <Divider orientation="vertical" flexItem />
+            <div className={classes.shapesContainer}>
+              Size
+              <button onClick={() => (ctx.lineWidth = 2)}>Line 1</button>
+              <button onClick={() => (ctx.lineWidth = 4)}>Line 2</button>
+              <button onClick={() => (ctx.lineWidth = 6)}>Line 3</button>
+              <button onClick={() => (ctx.lineWidth = 8)}>Line 4</button>
+            </div>
+            <Divider orientation="vertical" flexItem />
+            <div className={classes.colorsContainer}>
+              <div className={classes.colorsOptionsContainer}>
+                <TwitterPicker triangle="hide" onChangeComplete={saveColor} />
+                <div className={classes.colorsSavesContainer}>
+                  <button
+                    className={classes.colorsSavesButtonClass}
+                    onClick={() => {
+                      restoreSavedColor(color0)
+                    }}
+                    ref={(ref) => (color0 = ref)}
+                  ></button>
+                  <button
+                    className={classes.colorsSavesButtonClass}
+                    onClick={() => {
+                      restoreSavedColor(color1)
+                    }}
+                    ref={(ref) => (color1 = ref)}
+                  ></button>
+                  <button
+                    className={classes.colorsSavesButtonClass}
+                    onClick={() => {
+                      restoreSavedColor(color2)
+                    }}
+                    ref={(ref) => (color2 = ref)}
+                  ></button>
+                  <button
+                    className={classes.colorsSavesButtonClass}
+                    onClick={() => {
+                      restoreSavedColor(color3)
+                    }}
+                    ref={(ref) => (color3 = ref)}
+                  ></button>
+                  <button
+                    className={classes.colorsSavesButtonClass}
+                    onClick={() => {
+                      restoreSavedColor(color4)
+                    }}
+                    ref={(ref) => (color4 = ref)}
+                  ></button>
+                </div>
+              </div>
+              <div className={classes.colorsTitleClass}>Color</div>
+            </div>
+          </Grid>
+        )}
+        <div className={classes.mapContainer} id="map-container">
+          <img
+            ref={(ref) => (image = ref)}
+            hidden={!haveMap}
+            src={mapFile}
+            alt="map"
+            onLoad={handleImageLoaded}
+            id="mapImage"
+          />
+          <canvas
+            id="mapCanvas"
+            hidden={!haveMap}
+            className={classes.canvas}
+            ref={(ref) => (canvas = ref)}
+            onMouseDown={onMouseDown}
+            onMouseLeave={endPaintEvent}
+            onMouseUp={endPaintEvent}
+            onMouseMove={onMouseMove}
+          ></canvas>
+        </div>
       </div>
-    </div>
+      <Route path="/colaborators">
+        <Colaborators />
+      </Route>
+    </Router>
   )
 }
 
