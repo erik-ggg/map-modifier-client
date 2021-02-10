@@ -5,6 +5,7 @@ let initialState = {
   inRoom: false,
   userKey: undefined,
   userId: undefined,
+  socket: null,
 }
 
 const appSlice = createSlice({
@@ -26,6 +27,9 @@ const appSlice = createSlice({
     disconnected: (state) => {
       state.buttonConnectText = "Connect"
     },
+    setSocket: (state, action) => {
+      state.socket = action.payload
+    },
   },
 })
 
@@ -35,5 +39,6 @@ export const {
   connected,
   disconnected,
   updateInRoom,
+  setSocket,
 } = appSlice.actions
 export default appSlice.reducer
