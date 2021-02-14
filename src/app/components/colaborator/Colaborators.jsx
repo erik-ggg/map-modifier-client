@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react"
-import { useSelector } from "react-redux"
+import { useDispatch, useSelector } from "react-redux"
 import axios from "axios"
 
 import "./colaborators.css"
@@ -30,6 +30,9 @@ import { forwardRef } from "react"
 import Modal from "react-modal"
 
 import { addColaborator, deleteColaborator } from "../../services/api-calls"
+import AlertComponent from "../alert/AlertComponent"
+
+import { setHttpRequestStatus } from "../../redux/slices/AppSlice"
 
 const tableIcons = {
   Add: forwardRef((props, ref) => <AddBox {...props} ref={ref} />),
@@ -75,8 +78,10 @@ const useStyles = makeStyles({
 
 const Colaborators = () => {
   const classes = useStyles()
-  const [colaborators, setColaborators] = useState([])
+  const dispatch = useDispatch()
+  const httpRequestStatus = useSelector((res) => res.state.httpRequestStatus)
   const userId = useSelector((state) => state.state.userId)
+  const [colaborators, setColaborators] = useState([])
   const [isOpen, setIsOpen] = useState(false)
   const [emailTextField, setEmailTextField] = useState(null)
 
@@ -89,9 +94,9 @@ const Colaborators = () => {
           .then((colaborators) => {
             setColaborators(colaborators.data)
           })
+        // dispatch(setHttpRequestStatus(200))
       })
       .catch((err) => {
-        // @todo: show err message
         console.error(err)
       })
   }
@@ -99,11 +104,14 @@ const Colaborators = () => {
   const deleteColaboratorAction = (email) => {
     deleteColaborator(userId, email)
       .then((res) => {
-        console.log(res)
         // @todo: refresh list after success
+        axios
+          .get(`http://localhost:4000/api/colaborators/${userId}`)
+          .then((colaborators) => {
+            setColaborators(colaborators.data)
+          })
       })
       .catch((err) => {
-        // @todo: show err message
         console.error(err)
       })
   }
@@ -131,6 +139,7 @@ const Colaborators = () => {
   return (
     <div>
       <AppToolbar type={COLABORATORS_TOOLBAR} onOpenPopup={handleOpenPopup} />
+      {httpRequestStatus !== null && <AlertComponent />}
       <MaterialTable
         columns={[{ title: "User email", field: "email" }]}
         data={colaborators}
