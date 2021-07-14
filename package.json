@@ -2,6 +2,7 @@
   "name": "map-modifier",
   "version": "0.1.0",
   "private": true,
+  "homepage": ".",
   "dependencies": {
     "@material-ui/core": "^4.11.0",
     "@material-ui/icons": "^4.9.1",
@@ -17,6 +18,7 @@
     "react-color": "^2.19.3",
     "react-dom": "^17.0.1",
     "react-google-login": "^5.1.22",
+    "react-hot-toast": "^2.0.0",
     "react-modal": "^3.12.1",
     "react-redux": "^7.2.2",
     "react-router-dom": "^5.2.0",

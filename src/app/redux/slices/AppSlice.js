@@ -1,12 +1,17 @@
+import { act } from "react-dom/cjs/react-dom-test-utils.production.min"
+
 const { createSlice } = require("@reduxjs/toolkit")
 
 let initialState = {
   buttonConnectText: "Connect",
+  img: null,
   inRoom: false,
   haveMap: null,
   httpRequestStatus: null,
+  userEmail: null,
   userKey: undefined,
   userId: undefined,
+  userName: null,
   socket: null,
 }
 
@@ -17,8 +22,14 @@ const appSlice = createSlice({
     addKey: (state, action) => {
       state.userKey = action.payload
     },
+    addUserEmail: (state, action) => {
+      state.userEmail = action.payload
+    },
     addUserId: (state, action) => {
       state.userId = action.payload
+    },
+    addUserName: (state, action) => {
+      state.userName = action.payload
     },
     setHaveMap: (state, action) => {
       state.haveMap = action.payload
@@ -26,11 +37,14 @@ const appSlice = createSlice({
     updateInRoom: (state, action) => {
       state.inRoom = action.payload
     },
-    connected: (state) => {
+    connected: (state, action) => {
       state.buttonConnectText = "Disconnect"
     },
     disconnected: (state) => {
       state.buttonConnectText = "Connect"
+    },
+    setImage: (state, action) => {
+      state.img = action.img
     },
     setHttpRequestStatus: (state, action) => {
       state.httpRequestStatus = action.payload
@@ -43,10 +57,13 @@ const appSlice = createSlice({
 
 export const {
   addKey,
+  addUserEmail,
   addUserId,
+  addUserName,
   connected,
   disconnected,
   updateInRoom,
+  setImage,
   setHaveMap,
   setHttpRequestStatus,
   setSocket,

@@ -10,8 +10,15 @@ import {
   connected,
   disconnected,
   updateInRoom,
+  setHaveMap,
 } from "../redux/slices/AppSlice"
 import { io } from "socket.io-client"
+import toast, { Toaster } from "react-hot-toast"
+import {
+  LOGIN_SUCCESSFULL,
+  CONNECT_SUCCESSFULL,
+  DISCONNECT_SUCCESSFULL,
+} from "../utils/literals.js"
 
 let prevPos = { offsetX: 0, offsetY: 0 }
 let line = []
@@ -24,7 +31,56 @@ let socket = null
 
 const useStyles = makeStyles((theme) => ({
   mapContainer: {
+    display: "flex",
     position: "relative",
+  },
+
+  canvas: {
+    border: "1px solid #000000",
+    left: 0,
+    position: "absolute",
+    top: 0,
+  },
+  colorsContainer: {
+    display: "flex",
+    flexDirection: "column",
+  },
+  colorsOptionsContainer: {
+    display: "flex",
+    flexDirection: "row",
+  },
+  colorsSavesContainer: {
+    textAlign: "center",
+    display: "flex",
+    padding: "2rem 9px",
+  },
+  colorsSavesButtonClass: {
+    height: "30px",
+    width: "30px",
+    cursor: "pointer",
+    position: "relative",
+    outline: "none",
+    float: "left",
+    borderRadius: "4px",
+    borderWidth: "0",
+    margin: "0px 6px 6px 0px",
+  },
+  colorsTitleClass: {
+    textAlign: "center",
+  },
+  drawToolbarContainer: {
+    display: "flex",
+    flexDirection: "row",
+    height: "7rem",
+    backgroundColor: "#cfd1e3",
+    border: `1px solid ${theme.palette.divider}`,
+    borderRadius: theme.shape.borderRadius,
+  },
+  shapesContainer: {
+    display: "flex",
+    flexDirection: "column",
+    marginLeft: "2rem",
+    marginRight: "2rem",
   },
 }))
 
@@ -35,7 +91,9 @@ const Main = () => {
   const haveMap = useSelector((res) => res.state.haveMap)
   const buttonConnectText = useSelector((res) => res.state.buttonConnectText)
   const [userId, setUserId] = useState(null)
-  const [userMail, setUserMail] = useState(null)
+  const userEmail = useSelector((res) => res.state.userEmail)
+  const userName = useSelector((res) => res.state.userName)
+  // const mapFile = useSelector((res) => res.state.img)
 
   const [mapFile, setMapFile] = useState("")
   const [ctx, setCtx] = useState(null)
@@ -100,6 +158,10 @@ const Main = () => {
   //     socket.on("user joined", () => {})
   //   }
   // }
+
+  const test = () => {
+    console.log("test")
+  }
 
   const handleImageLoaded = () => {
     canvas.height = image.height
@@ -198,47 +260,53 @@ const Main = () => {
       socket.close()
       dispatch(updateInRoom(false))
     } else {
-      socket = io("http://localhost:4000", {
-        reconnectionDelayMax: 10000,
-        reconnectionAttempts: 5,
-      })
-      dispatch(updateInRoom(true))
+      if (userName && userEmail) {
+        socket = io("http://localhost:4000", {
+          reconnectionDelayMax: 10000,
+          reconnectionAttempts: 5,
+        })
+        dispatch(updateInRoom(true))
 
-      socket.on("connected", () => {
-        dispatch(addKey(socket.id))
-        dispatch(connected())
-        socket.emit("join room", { id: socket.id, targetId: socket.id })
-        axios
-          .post(`http://localhost:4000/api/users`, {
-            userId: userId,
-            socketId: socket.id,
-            email: userMail,
-          })
-          .then((res) => {
-            console.log(res)
-          })
-      })
+        socket.on("connected", () => {
+          dispatch(addKey(socket.id))
+          dispatch(connected())
+          socket.emit("join room", { id: socket.id, targetId: socket.id })
+          axios
+            .post(`http://localhost:4000/api/users`, {
+              userId: userName,
+              socketId: socket.id,
+              email: userEmail,
+            })
+            .then((res) => {
+              toast.success(CONNECT_SUCCESSFULL)
+              console.log(res)
+            })
+        })
 
-      socket.on("disconnect", () => {
-        console.log(socket.connected)
-        dispatch(disconnected())
-      })
+        socket.on("disconnect", () => {
+          toast.success(DISCONNECT_SUCCESSFULL)
+          dispatch(disconnected())
+        })
 
-      socket.on("broadcast res", (res) => {
-        console.log("broadcast res", res)
-      })
+        socket.on("broadcast res", (res) => {
+          console.log("broadcast res", res)
+        })
 
-      socket.on("receiving image", (res) => {
-        console.log("receiving image", res)
-        // setMapFile(`data:image/jpg;base64,${res}`)
-        setMapFile(res)
-      })
+        socket.on("receiving image", (res) => {
+          setMapFile(res)
+          // setHaveMap(res)
+        })
 
-      socket.on("receiving drawing", (res) => {
-        draw(res.prevPos, res.currPos)
-      })
+        socket.on("receiving drawing", (res) => {
+          draw(res.prevPos, res.currPos)
+        })
 
-      socket.on("user joined", () => {})
+        socket.on("user joined", () => {
+          console.log("user joined!")
+        })
+      } else {
+        //@todo: throw error
+      }
     }
   }
 
@@ -299,7 +367,13 @@ const Main = () => {
 
   return (
     <div>
-      <AppToolbar type={EDITOR_TOOLBAR} connect={connect} download={download} />
+      <Toaster position="top-center" reverseOrder={false} />
+      <AppToolbar
+        type={EDITOR_TOOLBAR}
+        connect={connect}
+        download={download}
+        socket={socket}
+      />
       {haveMap && (
         <Grid
           container
@@ -361,9 +435,9 @@ const Main = () => {
                   ref={(ref) => (color4 = ref)}
                 ></button>
               </div>
-              <div className={classes.colorsTitleClass}>Color</div>
+              {/* <div className={classes.colorsTitleClass}>Color</div> */}
             </div>
-            <div className={classes.colorsTitleClass}>Color</div>
+            {/* <div className={classes.colorsTitleClass}>Color</div> */}
           </div>
         </Grid>
       )}

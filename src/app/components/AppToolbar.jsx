@@ -19,9 +19,13 @@ import axios from "axios"
 import { useDispatch, useSelector } from "react-redux"
 import {
   addKey,
+  addUserEmail,
   addUserId,
+  addUserName,
   connected,
   disconnected,
+  setImage,
+  setHaveMap,
   updateInRoom,
 } from "../redux/slices/AppSlice"
 import { useState } from "react"
@@ -33,6 +37,7 @@ import {
   EDITOR_TOOLBAR,
   SESSION_STORAGE_USER_KEY,
 } from "../shared/constants"
+import Main from "./Main"
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -44,57 +49,9 @@ const useStyles = makeStyles((theme) => ({
   title: {
     flexGrow: 1,
   },
-  canvas: {
-    border: "1px solid #000000",
-    left: 0,
-    position: "absolute",
-    top: 0,
-  },
-  drawToolbarContainer: {
-    display: "flex",
-    flexDirection: "row",
-    height: "7rem",
-    backgroundColor: "#cfd1e3",
-    border: `1px solid ${theme.palette.divider}`,
-    borderRadius: theme.shape.borderRadius,
-  },
-  shapesContainer: {
-    display: "flex",
-    flexDirection: "column",
-    marginLeft: "2rem",
-    marginRight: "2rem",
-  },
-  colorsOptionsContainer: {
-    display: "flex",
-    flexDirection: "row",
-  },
-  colorsTitleClass: {
-    textAlign: "center",
-  },
-  colorsSavesContainer: {
-    textAlign: "center",
-    display: "flex",
-    paddingTop: "2rem",
-    paddingBottom: "2rem",
-  },
-  colorsSavesButtonClass: {
-    height: "30px",
-    width: "30px",
-    cursor: "pointer",
-    position: "relative",
-    outline: "none",
-    float: "left",
-    borderRadius: "4px",
-    borderWidth: "0",
-    margin: "0px 6px 6px 0px",
-  },
   connectOptionsContainer: {
     display: "flex",
   },
-  // colorsContainer: {
-  //   display: "flex",
-  //   flexDirection: "column",
-  // },
 }))
 
 const clientId =
@@ -102,21 +59,22 @@ const clientId =
 
 const handleLoginFailure = () => {}
 
-let socket = null
+// let socket = null
 
-const AppToolbar = ({ type, onOpenPopup, connect, download }) => {
+const AppToolbar = ({ type, onOpenPopup, connect, download, socket }) => {
   const classes = useStyles()
   const dispatch = useDispatch()
   const key = useSelector((res) => res.state.userKey)
   const inRoom = useSelector((res) => res.state.inRoom)
   const buttonConnectText = useSelector((res) => res.state.buttonConnectText)
   const userId = useSelector((res) => res.state.userId)
-  // const socket = useSelector((res) => res.state.socket)
 
   const [anchorEl, setAnchorEl] = useState(null)
+  const [connected, setConnected] = useState(false)
+  const [logged, setLogged] = useState(false)
   const [mapFile, setMapFile] = useState("")
   const [targetConnectionId, setTargetConnectionId] = useState("")
-  const [haveMap, setHaveMap] = useState(false)
+  const [haveMap, setHaveMapState] = useState(false)
   const [userMail, setUserMail] = useState(null)
 
   // ***** Canvas handlers *****
@@ -131,6 +89,9 @@ const AppToolbar = ({ type, onOpenPopup, connect, download }) => {
   }
 
   const handleLoginSuccess = (res) => {
+    setLogged(true)
+    dispatch(addUserEmail(res.profileObj.email))
+    dispatch(addUserName(res.profileObj.name))
     setUserMail(res.profileObj.email)
     dispatch(addUserId(res.googleId))
     sessionStorage.setItem(SESSION_STORAGE_USER_KEY, res.googleId)
@@ -147,7 +108,9 @@ const AppToolbar = ({ type, onOpenPopup, connect, download }) => {
   }
 
   const emitImage = (image) => {
-    socket.emit("broadcast image", image)
+    if (image) {
+      socket.emit("broadcast image", image)
+    }
   }
 
   /**
@@ -164,7 +127,7 @@ const AppToolbar = ({ type, onOpenPopup, connect, download }) => {
   const handleInputFile = (event) => {
     const img = event.target.files[0]
     setMapFile(URL.createObjectURL(img))
-    setHaveMap(true)
+    setHaveMapState(true)
     dispatch(setHaveMap(true))
 
     if (inRoom) {
@@ -232,15 +195,19 @@ const AppToolbar = ({ type, onOpenPopup, connect, download }) => {
           <div className={classes.connectOptionsContainer}>
             {userId !== null && (
               <div>
-                <input
-                  type="file"
-                  id="file-selector"
-                  accept=".jpg, .jpeg, .png"
-                  onChange={handleInputFile}
-                ></input>
-                <Button onClick={hadleDownloadButton} color="inherit">
-                  Download
-                </Button>
+                {connected && (
+                  <input
+                    type="file"
+                    id="file-selector"
+                    accept=".jpg, .jpeg, .png"
+                    onChange={handleInputFile}
+                  ></input>
+                )}
+                {connected && (
+                  <Button onClick={hadleDownloadButton} color="inherit">
+                    Download
+                  </Button>
+                )}
                 {buttonConnectText === "Disconnect" && (
                   <Button onClick={showKey} color="inherit">
                     Show Key
@@ -259,19 +226,23 @@ const AppToolbar = ({ type, onOpenPopup, connect, download }) => {
                     Join
                   </Button>
                 )}
-                <Button onClick={handleConnectButton} color="inherit">
-                  {buttonConnectText}
-                </Button>
+                {logged && (
+                  <Button onClick={handleConnectButton} color="inherit">
+                    {buttonConnectText}
+                  </Button>
+                )}
               </div>
             )}
-            <GoogleLogin
-              clientId={clientId}
-              buttonText="Login"
-              onSuccess={handleLoginSuccess}
-              onFailure={handleLoginFailure}
-              cookiePolicy={"single_host_origin"}
-              responseType="code,token"
-            />
+            {!logged && (
+              <GoogleLogin
+                clientId={clientId}
+                buttonText="Login"
+                onSuccess={handleLoginSuccess}
+                onFailure={handleLoginFailure}
+                cookiePolicy={"single_host_origin"}
+                responseType="code,token"
+              />
+            )}
           </div>
         )}
         {type === COLABORATORS_TOOLBAR && (

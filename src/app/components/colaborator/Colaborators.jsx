@@ -29,7 +29,7 @@ import { forwardRef } from "react"
 
 import Modal from "react-modal"
 
-import { addColaborator, deleteColaborator } from "../../services/api-calls"
+import { addColaborator, deleteColaborator } from "../../services/api"
 import AlertComponent from "../alert/AlertComponent"
 
 import { setHttpRequestStatus } from "../../redux/slices/AppSlice"
