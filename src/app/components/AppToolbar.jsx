@@ -277,12 +277,14 @@ const AppToolbar = ({
           <div className={classes.connectOptionsContainer}>
             {isLogged && (
               <div className={classes.connectOptionsContainerAux}>
-                <input
-                  type="file"
-                  id="file-selector"
-                  accept=".jpg, .jpeg, .png"
-                  onChange={handleInputFile}
-                ></input>
+                <Button
+                  variant="contained"
+                  onClick={handleInputFile}
+                  component="label"
+                >
+                  Upload File
+                  <input type="file" accept=".jpg, .jpeg, .png" hidden />
+                </Button>
                 <Button onClick={hadleDownloadButton} color="inherit">
                   Download
                 </Button>

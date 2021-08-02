@@ -91,8 +91,8 @@ const Main = () => {
   const haveMap = useSelector((res) => res.state.haveMap)
   const buttonConnectText = useSelector((res) => res.state.buttonConnectText)
   const [userId, setUserId] = useState(null)
-  const userEmail = useSelector((res) => res.state.userEmail)
-  const userName = useSelector((res) => res.state.userName)
+  const user = useSelector((res) => res.state.user)
+  const isConnected = useSelector((res) => res.state.isConnected)
   // const mapFile = useSelector((res) => res.state.img)
 
   const [mapFile, setMapFile] = useState("")
@@ -257,11 +257,11 @@ const Main = () => {
   }
 
   const connect = () => {
-    if (buttonConnectText === "Disconnect") {
+    if (isConnected) {
       socket.close()
       dispatch(updateInRoom(false))
     } else {
-      if (userName && userEmail) {
+      if (user) {
         socket = io("http://localhost:4000", {
           reconnectionDelayMax: 10000,
           reconnectionAttempts: 5,
@@ -274,9 +274,9 @@ const Main = () => {
           socket.emit("join room", { id: socket.id, targetId: socket.id })
           axios
             .post(`http://localhost:4000/api/users`, {
-              userId: userName,
+              userId: user.name,
               socketId: socket.id,
-              email: userEmail,
+              email: user.email,
             })
             .then((res) => {
               toast.success(CONNECT_SUCCESSFULL)
