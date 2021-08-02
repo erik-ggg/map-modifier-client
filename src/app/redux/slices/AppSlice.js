@@ -5,12 +5,14 @@ const { createSlice } = require("@reduxjs/toolkit")
 let initialState = {
   buttonConnectText: "Connect",
   img: null,
+  isConnected: false,
+  isLogged: false,
   inRoom: false,
   haveMap: null,
   httpRequestStatus: null,
+  user: null,
   userEmail: null,
   userKey: undefined,
-  userId: undefined,
   userName: null,
   socket: null,
 }
@@ -23,13 +25,16 @@ const appSlice = createSlice({
       state.userKey = action.payload
     },
     addUserEmail: (state, action) => {
-      state.userEmail = action.payload
+      state.user.email = action.payload
     },
     addUserId: (state, action) => {
-      state.userId = action.payload
+      state.user.id = action.payload
+    },
+    addUserData: (state, action) => {
+      state.user = action.payload
     },
     addUserName: (state, action) => {
-      state.userName = action.payload
+      state.user.name = action.payload
     },
     setHaveMap: (state, action) => {
       state.haveMap = action.payload
@@ -37,11 +42,16 @@ const appSlice = createSlice({
     updateInRoom: (state, action) => {
       state.inRoom = action.payload
     },
-    connected: (state, action) => {
+    connectedAction: (state, action) => {
+      state.isConnected = true
       state.buttonConnectText = "Disconnect"
     },
-    disconnected: (state) => {
+    disconnectedAction: (state) => {
+      state.isConnected = false
       state.buttonConnectText = "Connect"
+    },
+    logInAction: (state) => {
+      state.isLogged = true
     },
     setImage: (state, action) => {
       state.img = action.img
@@ -60,8 +70,10 @@ export const {
   addUserEmail,
   addUserId,
   addUserName,
-  connected,
-  disconnected,
+  addUserData,
+  connectedAction,
+  disconnectedAction,
+  logInAction,
   updateInRoom,
   setImage,
   setHaveMap,

@@ -52,7 +52,7 @@ const App = () => {
     })
     if (window.performance && performance.navigation.type === 1) {
       const userId = sessionStorage.getItem(SESSION_STORAGE_USER_KEY)
-      dispatch(addUserId(userId))
+      // dispatch(addUserId(userId))
     }
   })
 

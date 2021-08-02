@@ -7,8 +7,8 @@ import { useEffect, useState } from "react"
 import axios from "axios"
 import {
   addKey,
-  connected,
-  disconnected,
+  connectedAction,
+  disconnectedAction,
   updateInRoom,
   setHaveMap,
 } from "../redux/slices/AppSlice"
@@ -159,10 +159,6 @@ const Main = () => {
   //   }
   // }
 
-  const test = () => {
-    console.log("test")
-  }
-
   const handleImageLoaded = () => {
     canvas.height = image.height
     canvas.width = image.width
@@ -255,6 +251,11 @@ const Main = () => {
   //     document.body.removeChild(el)
   //   }
 
+  const disconnect = () => {
+    socket.close()
+    dispatch(updateInRoom(false))
+  }
+
   const connect = () => {
     if (buttonConnectText === "Disconnect") {
       socket.close()
@@ -269,7 +270,7 @@ const Main = () => {
 
         socket.on("connected", () => {
           dispatch(addKey(socket.id))
-          dispatch(connected())
+          dispatch(connectedAction())
           socket.emit("join room", { id: socket.id, targetId: socket.id })
           axios
             .post(`http://localhost:4000/api/users`, {
@@ -285,7 +286,7 @@ const Main = () => {
 
         socket.on("disconnect", () => {
           toast.success(DISCONNECT_SUCCESSFULL)
-          dispatch(disconnected())
+          dispatch(disconnectedAction())
         })
 
         socket.on("broadcast res", (res) => {
@@ -371,6 +372,7 @@ const Main = () => {
       <AppToolbar
         type={EDITOR_TOOLBAR}
         connect={connect}
+        disconnect={disconnect}
         download={download}
         socket={socket}
       />

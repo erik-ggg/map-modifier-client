@@ -6,7 +6,10 @@ import "./colaborators.css"
 
 import { Button, makeStyles, TextField } from "@material-ui/core"
 import AppToolbar from "../AppToolbar"
-import { COLABORATORS_TOOLBAR } from "../../shared/constants"
+import {
+  COLABORATORS_TOOLBAR,
+  SESSION_STORAGE_USER_ID,
+} from "../../shared/constants"
 import MaterialTable from "material-table"
 
 import AddBox from "@material-ui/icons/AddBox"
@@ -80,17 +83,19 @@ const Colaborators = () => {
   const classes = useStyles()
   const dispatch = useDispatch()
   const httpRequestStatus = useSelector((res) => res.state.httpRequestStatus)
+  const userName = useSelector((res) => res.state.userName)
+
   const userId = useSelector((state) => state.state.userId)
   const [colaborators, setColaborators] = useState([])
   const [isOpen, setIsOpen] = useState(false)
   const [emailTextField, setEmailTextField] = useState(null)
 
   const addColaboratorHandler = () => {
-    addColaborator(userId, emailTextField)
+    addColaborator(userName, emailTextField)
       .then((res) => {
         // @todo: refactorizar
         axios
-          .get(`http://localhost:4000/api/colaborators/${userId}`)
+          .get(`http://localhost:4000/api/colaborators/${userName}`)
           .then((colaborators) => {
             setColaborators(colaborators.data)
           })
@@ -121,14 +126,17 @@ const Colaborators = () => {
   }
 
   useEffect(() => {
-    if (userId !== undefined) {
-      axios
-        .get(`http://localhost:4000/api/colaborators/${userId}`)
-        .then((colaborators) => {
-          setColaborators(colaborators.data)
-        })
-    }
-  }, [userId])
+    console.log(userName)
+    axios
+      .get(
+        `http://localhost:4000/api/colaborators/${sessionStorage.getItem(
+          SESSION_STORAGE_USER_ID
+        )}`
+      )
+      .then((colaborators) => {
+        setColaborators(colaborators.data)
+      })
+  }, [userName])
 
   useEffect(() => {}, [colaborators])
 
@@ -141,7 +149,24 @@ const Colaborators = () => {
       <AppToolbar type={COLABORATORS_TOOLBAR} onOpenPopup={handleOpenPopup} />
       {httpRequestStatus !== null && <AlertComponent />}
       <MaterialTable
-        columns={[{ title: "User email", field: "email" }]}
+        columns={[
+          { title: "User email", field: "email" },
+          {
+            title: "Online",
+            field: "id",
+            render: (rowData) => (
+              <img
+                src={`${
+                  rowData.id !== null
+                    ? process.env.PUBLIC_URL + "online.png"
+                    : process.env.PUBLIC_URL + "offline.png"
+                }`}
+                alt=""
+                style={{ width: 40, borderRadius: "50%" }}
+              />
+            ),
+          },
+        ]}
         data={colaborators}
         icons={tableIcons}
         title="Colaborators"

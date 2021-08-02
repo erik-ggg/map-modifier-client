@@ -22,11 +22,13 @@ import {
   addUserEmail,
   addUserId,
   addUserName,
-  connected,
-  disconnected,
+  connectedAction,
+  disconnectedAction,
   setImage,
   setHaveMap,
   updateInRoom,
+  addUserData,
+  logInAction,
 } from "../redux/slices/AppSlice"
 import { useState } from "react"
 import { useEffect } from "react"
@@ -36,6 +38,9 @@ import {
   COLABORATORS_TOOLBAR,
   EDITOR_TOOLBAR,
   SESSION_STORAGE_USER_KEY,
+  SESSION_STORAGE_USER_ID,
+  CONNECT_BUTTON_CONNECT,
+  CONNECT_BUTTON_DISCONNECT,
 } from "../shared/constants"
 import Main from "./Main"
 
@@ -52,6 +57,9 @@ const useStyles = makeStyles((theme) => ({
   connectOptionsContainer: {
     display: "flex",
   },
+  connectOptionsContainerAux: {
+    display: "flex",
+  },
 }))
 
 const clientId =
@@ -61,26 +69,40 @@ const handleLoginFailure = () => {}
 
 // let socket = null
 
-const AppToolbar = ({ type, onOpenPopup, connect, download, socket }) => {
+const AppToolbar = ({
+  type,
+  onOpenPopup,
+  connect,
+  disconnect,
+  download,
+  socket,
+}) => {
   const classes = useStyles()
   const dispatch = useDispatch()
   const key = useSelector((res) => res.state.userKey)
   const inRoom = useSelector((res) => res.state.inRoom)
   const buttonConnectText = useSelector((res) => res.state.buttonConnectText)
   const userId = useSelector((res) => res.state.userId)
+  const user = useSelector((res) => res.state.user)
+  const isConnected = useSelector((res) => res.state.isConnected)
+  const isLogged = useSelector((res) => res.state.isLogged)
 
   const [anchorEl, setAnchorEl] = useState(null)
-  const [connected, setConnected] = useState(false)
+  // const [connected, setConnected] = useState(false)
   const [logged, setLogged] = useState(false)
   const [mapFile, setMapFile] = useState("")
   const [targetConnectionId, setTargetConnectionId] = useState("")
   const [haveMap, setHaveMapState] = useState(false)
   const [userMail, setUserMail] = useState(null)
 
-  // ***** Canvas handlers *****
-
   const handleConnectButton = () => {
-    connect()
+    if (isConnected) {
+      // setConnected(false)
+      disconnect()
+    } else {
+      // setConnected(true)
+      connect()
+    }
   }
 
   const join = () => {
@@ -89,12 +111,18 @@ const AppToolbar = ({ type, onOpenPopup, connect, download, socket }) => {
   }
 
   const handleLoginSuccess = (res) => {
-    setLogged(true)
-    dispatch(addUserEmail(res.profileObj.email))
-    dispatch(addUserName(res.profileObj.name))
-    setUserMail(res.profileObj.email)
-    dispatch(addUserId(res.googleId))
+    // setLogged(true)
+    const user = {
+      name: res.profileObj.name,
+      email: res.profileObj.email,
+      id: res.googleId,
+    }
+    dispatch(addUserData(user))
+    dispatch(logInAction())
+    // setUserMail(res.profileObj.email)
     sessionStorage.setItem(SESSION_STORAGE_USER_KEY, res.googleId)
+    sessionStorage.setItem(SESSION_STORAGE_USER_ID, res.profileObj.name)
+    connect()
   }
 
   const showKey = () => {
@@ -191,11 +219,11 @@ const AppToolbar = ({ type, onOpenPopup, connect, download, socket }) => {
         <Typography variant="h6" className={classes.title}>
           Editor
         </Typography>
-        {type === EDITOR_TOOLBAR && (
+        {/* {type === EDITOR_TOOLBAR && (
           <div className={classes.connectOptionsContainer}>
             {userId !== null && (
-              <div>
-                {connected && (
+              <div className={classes.connectOptionsContainerAux}>
+                {isLogged && (
                   <input
                     type="file"
                     id="file-selector"
@@ -203,7 +231,7 @@ const AppToolbar = ({ type, onOpenPopup, connect, download, socket }) => {
                     onChange={handleInputFile}
                   ></input>
                 )}
-                {connected && (
+                {isLogged && (
                   <Button onClick={hadleDownloadButton} color="inherit">
                     Download
                   </Button>
@@ -234,6 +262,56 @@ const AppToolbar = ({ type, onOpenPopup, connect, download, socket }) => {
               </div>
             )}
             {!logged && (
+              <GoogleLogin
+                clientId={clientId}
+                buttonText="Login"
+                onSuccess={handleLoginSuccess}
+                onFailure={handleLoginFailure}
+                cookiePolicy={"single_host_origin"}
+                responseType="code,token"
+              />
+            )}
+          </div>
+        )} */}
+        {type === EDITOR_TOOLBAR && (
+          <div className={classes.connectOptionsContainer}>
+            {isLogged && (
+              <div className={classes.connectOptionsContainerAux}>
+                <input
+                  type="file"
+                  id="file-selector"
+                  accept=".jpg, .jpeg, .png"
+                  onChange={handleInputFile}
+                ></input>
+                <Button onClick={hadleDownloadButton} color="inherit">
+                  Download
+                </Button>
+                {isConnected && (
+                  <Button onClick={showKey} color="inherit">
+                    Show Key
+                  </Button>
+                )}
+                {isConnected && (
+                  <TextField
+                    id="connection-id"
+                    onChange={(e) => setTargetConnectionId(e.target.value)}
+                    label="Outlined"
+                    variant="outlined"
+                  />
+                )}
+                {isConnected && (
+                  <Button onClick={join} color="inherit">
+                    Join
+                  </Button>
+                )}
+                <Button onClick={handleConnectButton} color="inherit">
+                  {!isConnected
+                    ? CONNECT_BUTTON_CONNECT
+                    : CONNECT_BUTTON_DISCONNECT}
+                </Button>
+              </div>
+            )}
+            {!isLogged && (
               <GoogleLogin
                 clientId={clientId}
                 buttonText="Login"
