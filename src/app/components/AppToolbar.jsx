@@ -12,28 +12,19 @@ import {
 } from "@material-ui/core"
 import MenuIcon from "@material-ui/icons/Menu"
 
+import toast from "react-hot-toast"
+
 import { GoogleLogin } from "react-google-login"
-import { io } from "socket.io-client"
-import axios from "axios"
 
 import { useDispatch, useSelector } from "react-redux"
 import {
-  addKey,
-  addUserEmail,
-  addUserId,
-  addUserName,
-  connectedAction,
-  disconnectedAction,
-  setImage,
   setHaveMap,
   updateInRoom,
   addUserData,
   logInAction,
 } from "../redux/slices/AppSlice"
 import { useState } from "react"
-import { useEffect } from "react"
 import { Link } from "react-router-dom"
-import Colaborators from "./colaborator/Colaborators"
 import {
   COLABORATORS_TOOLBAR,
   EDITOR_TOOLBAR,
@@ -42,7 +33,6 @@ import {
   CONNECT_BUTTON_CONNECT,
   CONNECT_BUTTON_DISCONNECT,
 } from "../shared/constants"
-import Main from "./Main"
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -76,24 +66,24 @@ const AppToolbar = ({
   disconnect,
   download,
   socket,
+  setImage,
 }) => {
   const classes = useStyles()
   const dispatch = useDispatch()
-  const key = useSelector((res) => res.state.userKey)
-  const inRoom = useSelector((res) => res.state.inRoom)
-  const buttonConnectText = useSelector((res) => res.state.buttonConnectText)
+  const roomKey = useSelector((res) => res.state.roomKey)
+  // const inRoom = useSelector((res) => res.state.inRoom)
+  // const buttonConnectText = useSelector((res) => res.state.buttonConnectText)
   const userId = useSelector((res) => res.state.userId)
-  const user = useSelector((res) => res.state.user)
   const isConnected = useSelector((res) => res.state.isConnected)
   const isLogged = useSelector((res) => res.state.isLogged)
 
   const [anchorEl, setAnchorEl] = useState(null)
   // const [connected, setConnected] = useState(false)
-  const [logged, setLogged] = useState(false)
+  // const [logged, setLogged] = useState(false)
   const [mapFile, setMapFile] = useState("")
   const [targetConnectionId, setTargetConnectionId] = useState("")
   const [haveMap, setHaveMapState] = useState(false)
-  const [userMail, setUserMail] = useState(null)
+  // const [userMail, setUserMail] = useState(null)
 
   const handleConnectButton = () => {
     if (isConnected) {
@@ -126,18 +116,17 @@ const AppToolbar = ({
   }
 
   const showKey = () => {
-    alert(`User key: ${key}, copied to clipboard`)
-    const el = document.createElement("textarea")
-    el.value = key
-    document.body.appendChild(el)
-    el.select()
-    document.execCommand("copy")
-    document.body.removeChild(el)
+    navigator.clipboard.writeText(socket.id)
+    toast.success(`User key: ${socket.id}, copied to clipboard`)
   }
 
   const emitImage = (image) => {
     if (image) {
-      socket.emit("broadcast image", image)
+      socket.emit(
+        "broadcast image",
+        image,
+        roomKey !== null ? roomKey : socket.id
+      )
     }
   }
 
@@ -154,17 +143,16 @@ const AppToolbar = ({
    */
   const handleInputFile = (event) => {
     const img = event.target.files[0]
+    setImage(URL.createObjectURL(img))
     setMapFile(URL.createObjectURL(img))
     setHaveMapState(true)
     dispatch(setHaveMap(true))
 
-    if (inRoom) {
-      const reader = new FileReader()
-      reader.onloadend = function () {
-        emitImage(reader.result)
-      }
-      reader.readAsDataURL(event.target.files[0])
+    const reader = new FileReader()
+    reader.onloadend = function () {
+      emitImage(reader.result)
     }
+    reader.readAsDataURL(event.target.files[0])
   }
 
   const handleLoadMap = () => {
@@ -219,71 +207,18 @@ const AppToolbar = ({
         <Typography variant="h6" className={classes.title}>
           Editor
         </Typography>
-        {/* {type === EDITOR_TOOLBAR && (
-          <div className={classes.connectOptionsContainer}>
-            {userId !== null && (
-              <div className={classes.connectOptionsContainerAux}>
-                {isLogged && (
-                  <input
-                    type="file"
-                    id="file-selector"
-                    accept=".jpg, .jpeg, .png"
-                    onChange={handleInputFile}
-                  ></input>
-                )}
-                {isLogged && (
-                  <Button onClick={hadleDownloadButton} color="inherit">
-                    Download
-                  </Button>
-                )}
-                {buttonConnectText === "Disconnect" && (
-                  <Button onClick={showKey} color="inherit">
-                    Show Key
-                  </Button>
-                )}
-                {buttonConnectText === "Disconnect" && (
-                  <TextField
-                    id="connection-id"
-                    onChange={(e) => setTargetConnectionId(e.target.value)}
-                    label="Outlined"
-                    variant="outlined"
-                  />
-                )}
-                {buttonConnectText === "Disconnect" && (
-                  <Button onClick={join} color="inherit">
-                    Join
-                  </Button>
-                )}
-                {logged && (
-                  <Button onClick={handleConnectButton} color="inherit">
-                    {buttonConnectText}
-                  </Button>
-                )}
-              </div>
-            )}
-            {!logged && (
-              <GoogleLogin
-                clientId={clientId}
-                buttonText="Login"
-                onSuccess={handleLoginSuccess}
-                onFailure={handleLoginFailure}
-                cookiePolicy={"single_host_origin"}
-                responseType="code,token"
-              />
-            )}
-          </div>
-        )} */}
         {type === EDITOR_TOOLBAR && (
           <div className={classes.connectOptionsContainer}>
             {isLogged && (
               <div className={classes.connectOptionsContainerAux}>
-                <Button
-                  variant="contained"
-                  onClick={handleInputFile}
-                  component="label"
-                >
+                <Button variant="contained" component="label">
                   Upload File
-                  <input type="file" accept=".jpg, .jpeg, .png" hidden />
+                  <input
+                    type="file"
+                    onChange={handleInputFile}
+                    accept=".jpg, .jpeg, .png"
+                    hidden
+                  />
                 </Button>
                 <Button onClick={hadleDownloadButton} color="inherit">
                   Download

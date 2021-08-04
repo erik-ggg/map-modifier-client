@@ -87,6 +87,7 @@ const useStyles = makeStyles((theme) => ({
 const Main = () => {
   const classes = useStyles()
   const dispatch = useDispatch()
+  const roomKey = useSelector((res) => res.state.roomKey)
   const inRoom = useSelector((res) => res.state.inRoom)
   const haveMap = useSelector((res) => res.state.haveMap)
   const buttonConnectText = useSelector((res) => res.state.buttonConnectText)
@@ -266,12 +267,8 @@ const Main = () => {
           reconnectionDelayMax: 10000,
           reconnectionAttempts: 5,
         })
-        dispatch(updateInRoom(true))
 
         socket.on("connected", () => {
-          dispatch(addKey(socket.id))
-          dispatch(connectedAction())
-          socket.emit("join room", { id: socket.id, targetId: socket.id })
           axios
             .post(`http://localhost:4000/api/users`, {
               userId: user.name,
@@ -279,6 +276,7 @@ const Main = () => {
               email: user.email,
             })
             .then((res) => {
+              dispatch(connectedAction())
               toast.success(CONNECT_SUCCESSFULL)
               console.log(res)
             })
@@ -294,7 +292,8 @@ const Main = () => {
         })
 
         socket.on("receiving image", (res) => {
-          setMapFile(res)
+          dispatch(setHaveMap(true))
+          setMapFile(res.image)
           // setHaveMap(res)
         })
 
@@ -303,7 +302,24 @@ const Main = () => {
         })
 
         socket.on("user joined", () => {
-          console.log("user joined!")
+          socket.emit("broadcast image", mapFile, roomKey)
+          console.log("user joined")
+          toast("User joined!", {
+            icon: "🙋‍♀️",
+          })
+        })
+
+        socket.on("joined", (targetId) => {
+          dispatch(addKey(targetId))
+          console.log("warning")
+          toast.success("Joined!")
+        })
+
+        socket.on("already joined", () => {
+          console.log("warning")
+          toast("Already joined!", {
+            icon: "⚠️",
+          })
         })
       } else {
         //@todo: throw error
@@ -366,6 +382,10 @@ const Main = () => {
     link.click()
   }
 
+  const setImage = (image) => {
+    setMapFile(image)
+  }
+
   return (
     <div>
       <Toaster position="top-center" reverseOrder={false} />
@@ -375,6 +395,7 @@ const Main = () => {
         disconnect={disconnect}
         download={download}
         socket={socket}
+        setImage={setImage}
       />
       {haveMap && (
         <Grid

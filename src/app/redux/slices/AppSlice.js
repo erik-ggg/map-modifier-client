@@ -11,9 +11,7 @@ let initialState = {
   haveMap: null,
   httpRequestStatus: null,
   user: null,
-  userEmail: null,
-  userKey: undefined,
-  userName: null,
+  roomKey: null,
   socket: null,
 }
 
@@ -22,7 +20,7 @@ const appSlice = createSlice({
   initialState,
   reducers: {
     addKey: (state, action) => {
-      state.userKey = action.payload
+      state.roomKey = action.payload
     },
     addUserEmail: (state, action) => {
       state.user.email = action.payload

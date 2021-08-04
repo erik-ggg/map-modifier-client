@@ -1,7 +1,7 @@
 import { createSelector } from "@reduxjs/toolkit"
 
-const selectState = (state) => state
+// const selectState = (state) => state
 
-export const selectUserKey = createSelector(selectState, (state) => {
-  return state.userKey
-})
+// export const selectUserKey = createSelector(selectState, (state) => {
+//   return state.userKey
+// })
