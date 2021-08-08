@@ -271,14 +271,13 @@ const Main = () => {
         socket.on("connected", () => {
           axios
             .post(`http://localhost:4000/api/users`, {
-              userId: user.name,
-              socketId: socket.id,
+              name: user.name,
               email: user.email,
+              socketId: socket.id,
             })
             .then((res) => {
               dispatch(connectedAction())
               toast.success(CONNECT_SUCCESSFULL)
-              console.log(res)
             })
         })
 

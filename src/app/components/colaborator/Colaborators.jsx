@@ -27,12 +27,17 @@ import Remove from "@material-ui/icons/Remove"
 import SaveAlt from "@material-ui/icons/SaveAlt"
 import Search from "@material-ui/icons/Search"
 import ViewColumn from "@material-ui/icons/ViewColumn"
+import InputIcon from "@material-ui/icons/Input"
 
 import { forwardRef } from "react"
 
 import Modal from "react-modal"
 
-import { addColaborator, deleteColaborator } from "../../services/api"
+import {
+  addColaborator,
+  deleteColaborator,
+  getColaborators,
+} from "../../services/api"
 import AlertComponent from "../alert/AlertComponent"
 
 import { setHttpRequestStatus } from "../../redux/slices/AppSlice"
@@ -83,7 +88,7 @@ const Colaborators = () => {
   const classes = useStyles()
   const dispatch = useDispatch()
   const httpRequestStatus = useSelector((res) => res.state.httpRequestStatus)
-  const userName = useSelector((res) => res.state.userName)
+  const user = useSelector((res) => res.state.user)
 
   const userId = useSelector((state) => state.state.userId)
   const [colaborators, setColaborators] = useState([])
@@ -91,11 +96,11 @@ const Colaborators = () => {
   const [emailTextField, setEmailTextField] = useState(null)
 
   const addColaboratorHandler = () => {
-    addColaborator(userName, emailTextField)
+    addColaborator(user.email, emailTextField)
       .then((res) => {
         // @todo: refactorizar
         axios
-          .get(`http://localhost:4000/api/colaborators/${userName}`)
+          .get(`http://localhost:4000/api/colaborators/${user.email}`)
           .then((colaborators) => {
             setColaborators(colaborators.data)
           })
@@ -110,11 +115,9 @@ const Colaborators = () => {
     deleteColaborator(userId, email)
       .then((res) => {
         // @todo: refresh list after success
-        axios
-          .get(`http://localhost:4000/api/colaborators/${userId}`)
-          .then((colaborators) => {
-            setColaborators(colaborators.data)
-          })
+        getColaborators(user.email).then((colaborators) => {
+          setColaborators(colaborators.data)
+        })
       })
       .catch((err) => {
         console.error(err)
@@ -126,17 +129,10 @@ const Colaborators = () => {
   }
 
   useEffect(() => {
-    console.log(userName)
-    axios
-      .get(
-        `http://localhost:4000/api/colaborators/${sessionStorage.getItem(
-          SESSION_STORAGE_USER_ID
-        )}`
-      )
-      .then((colaborators) => {
-        setColaborators(colaborators.data)
-      })
-  }, [userName])
+    getColaborators(user.email).then((colaborators) => {
+      setColaborators(colaborators.data)
+    })
+  }, [user])
 
   useEffect(() => {}, [colaborators])
 
@@ -150,14 +146,15 @@ const Colaborators = () => {
       {httpRequestStatus !== null && <AlertComponent />}
       <MaterialTable
         columns={[
-          { title: "User email", field: "email" },
+          { title: "Name", field: "name" },
+          { title: "Email", field: "email" },
           {
             title: "Online",
-            field: "id",
+            field: "isOnline",
             render: (rowData) => (
               <img
                 src={`${
-                  rowData.id !== null
+                  rowData.isOnline
                     ? process.env.PUBLIC_URL + "online.png"
                     : process.env.PUBLIC_URL + "offline.png"
                 }`}
@@ -171,12 +168,34 @@ const Colaborators = () => {
         icons={tableIcons}
         title="Colaborators"
         actions={[
+          (rowData) => ({
+            icon: "input",
+            tooltip: "Join colaborator",
+            onClick: (event, rowData) => console.log("joined"),
+            disabled: !rowData.isOnline,
+          }),
           {
             icon: "delete",
             tooltip: "Delete User",
             onClick: (event, rowData) => deleteColaboratorAction(rowData.email),
           },
+          {
+            icon: "refresh",
+            tooltip: "Refresh",
+            isFreeAction: true,
+            actionsColumnIndex: -1,
+            toolbarButtonAlignment: "left",
+            onClick: (event) => {
+              getColaborators(user.email).then((colaborators) => {
+                setColaborators(colaborators.data)
+              })
+            },
+          },
         ]}
+        options={{
+          toolbarButtonAlignment: "left",
+          actionsColumnIndex: -1,
+        }}
       />
       <Modal
         isOpen={isOpen}
@@ -197,11 +216,7 @@ const Colaborators = () => {
           />
         </form>
         <div className={classes.buttonsContainer}>
-          <Button
-            variant="contained"
-            onClick={addColaboratorHandler}
-            color="primary"
-          >
+          <Button onClick={addColaboratorHandler} color="primary">
             Add
           </Button>
           <Button variant="contained" onClick={toggleModal} color="primary">

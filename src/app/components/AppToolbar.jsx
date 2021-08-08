@@ -10,8 +10,10 @@ import {
   Toolbar,
   Typography,
 } from "@material-ui/core"
+import RefreshIcon from "@material-ui/icons/Refresh"
 import MenuIcon from "@material-ui/icons/Menu"
 
+import Fab from "@material-ui/core/Fab"
 import toast from "react-hot-toast"
 
 import { GoogleLogin } from "react-google-login"
@@ -65,6 +67,7 @@ const AppToolbar = ({
   connect,
   disconnect,
   download,
+  refresh,
   socket,
   setImage,
 }) => {
@@ -262,7 +265,7 @@ const AppToolbar = ({
         )}
         {type === COLABORATORS_TOOLBAR && (
           <div>
-            <Button onClick={handleButtonColaboratorsPopup}>
+            <Button variant="contained" onClick={handleButtonColaboratorsPopup}>
               Add Colaborator
             </Button>
           </div>

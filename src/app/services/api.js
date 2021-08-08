@@ -22,15 +22,24 @@ export const deleteColaborator = (userId, colaboratorEmail) => {
 
 /**
  * Sends the petition to add the colaborator of the given user
- * @param {*} userId the logged google user id
+ * @param {*} email the user email
  * @param {*} colaboratorEmail the colaborator email
  */
-export const addColaborator = (userId, colaboratorEmail) => {
+export const addColaborator = (email, colaboratorEmail) => {
   const data = JSON.stringify({
-    userId: userId,
-    email: colaboratorEmail,
+    source: email,
+    tarjet: colaboratorEmail,
   })
   return axios.post(addColaboratorUri, data, {
     headers: { "Content-Type": "application/json" },
   })
+}
+
+/**
+ * Gets all the logged user colaborators
+ * @param {*} email the logged user email
+ * @returns the promise with all the colaborators
+ */
+export const getColaborators = (email) => {
+  return axios.get(`http://localhost:4000/api/colaborators/${email}`)
 }
