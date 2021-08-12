@@ -10,7 +10,9 @@ import {
   connectedAction,
   disconnectedAction,
   updateInRoom,
+  setIsHost,
   setHaveMap,
+  setSocket,
 } from "../redux/slices/AppSlice"
 import { io } from "socket.io-client"
 import toast, { Toaster } from "react-hot-toast"
@@ -20,9 +22,10 @@ import {
   DISCONNECT_SUCCESSFULL,
 } from "../utils/literals.js"
 
+import { SHARE_DRAW_CONFIG } from "../shared/socket-actions"
+
 let prevPos = { offsetX: 0, offsetY: 0 }
 let line = []
-let userStrokeStyle = "#EE92C2"
 let color0, color1, color2, color3, color4
 let colors = []
 let canvas
@@ -90,10 +93,9 @@ const Main = () => {
   const roomKey = useSelector((res) => res.state.roomKey)
   const inRoom = useSelector((res) => res.state.inRoom)
   const haveMap = useSelector((res) => res.state.haveMap)
-  const buttonConnectText = useSelector((res) => res.state.buttonConnectText)
-  const [userId, setUserId] = useState(null)
   const user = useSelector((res) => res.state.user)
   const isConnected = useSelector((res) => res.state.isConnected)
+  const isHost = useSelector((res) => res.state.isHost)
   // const mapFile = useSelector((res) => res.state.img)
 
   const [mapFile, setMapFile] = useState("")
@@ -101,12 +103,17 @@ const Main = () => {
   const [isPainting, setIsPainting] = useState(false)
   const [nextColor, setNextColor] = useState(0)
   const [drawingFigure, setDrawingFigure] = useState(0)
+  const [drawConfig, setDrawConfig] = useState({
+    lineJoin: "round",
+    lineWidth: 2,
+    strokeStyle: "black",
+  })
 
   useEffect(() => {
     const ctxAux = canvas.getContext("2d")
-    ctxAux.strokeStyle = "red"
-    ctxAux.lineJoin = "round"
-    ctxAux.lineWidth = 5
+    // ctxAux.strokeStyle = drawConfig.strokeStyle
+    // ctxAux.lineJoin = drawConfig.lineJoin
+    // ctxAux.lineWidth = drawConfig.lineWidth
     setCtx(ctxAux)
   }, [ctx])
 
@@ -182,7 +189,7 @@ const Main = () => {
       // }
       // Add the position to the line array
       // line = line.concat(positionData)
-      draw(prevPos, offSetData, userStrokeStyle)
+      draw(prevPos, offSetData)
     }
   }
 
@@ -219,15 +226,19 @@ const Main = () => {
     }
   }
 
-  const emitDrawing = (prevPos, currPos) => {
-    socket.emit("broadcast drawing", { prevPos: prevPos, currPos: currPos })
+  const emitDrawing = (prevPos, currPos, room) => {
+    socket.emit("broadcast drawing", {
+      prevPos: prevPos,
+      currPos: currPos,
+      room,
+    })
   }
 
   const draw = (prevPosParam, currPos) => {
     const { offsetX: x, offsetY: y } = prevPosParam
     const { offsetX, offsetY } = currPos
     if (inRoom) {
-      emitDrawing(prevPosParam, currPos)
+      emitDrawing(prevPosParam, currPos, roomKey !== null ? roomKey : socket.id)
     }
     // ctx.save()
     ctx.beginPath()
@@ -268,6 +279,9 @@ const Main = () => {
           reconnectionAttempts: 5,
         })
 
+        // setSocket(socket)
+        console.log(socket)
+
         socket.on("connected", () => {
           axios
             .post(`http://localhost:4000/api/users`, {
@@ -276,6 +290,9 @@ const Main = () => {
               socketId: socket.id,
             })
             .then((res) => {
+              console.log(res)
+              setSocket(socket)
+              // handleSetSocket(socket)
               dispatch(connectedAction())
               toast.success(CONNECT_SUCCESSFULL)
             })
@@ -301,8 +318,20 @@ const Main = () => {
         })
 
         socket.on("user joined", () => {
-          socket.emit("broadcast image", mapFile, roomKey)
-          console.log("user joined")
+          dispatch(setIsHost(true))
+          dispatch(updateInRoom(true))
+          if (haveMap) {
+            socket.emit(
+              "broadcast image",
+              mapFile,
+              roomKey !== null ? roomKey : socket.id
+            )
+          }
+          socket.emit(
+            SHARE_DRAW_CONFIG,
+            drawConfig,
+            roomKey !== null ? roomKey : socket.id
+          )
           toast("User joined!", {
             icon: "🙋‍♀️",
           })
@@ -310,15 +339,19 @@ const Main = () => {
 
         socket.on("joined", (targetId) => {
           dispatch(addKey(targetId))
-          console.log("warning")
           toast.success("Joined!")
         })
 
         socket.on("already joined", () => {
-          console.log("warning")
           toast("Already joined!", {
             icon: "⚠️",
           })
+        })
+
+        socket.on(SHARE_DRAW_CONFIG, (config) => {
+          console.log("RECEIVE: SHARE_DRAW_CONFIG", config)
+          setDrawConfig(config)
+          setCanvasContextConfig(config)
         })
       } else {
         //@todo: throw error
@@ -332,7 +365,15 @@ const Main = () => {
    * @param {*} color the selected color
    */
   const saveColor = (color) => {
+    drawConfig.strokeStyle = color.hex
     ctx.strokeStyle = color.hex
+    if (isConnected)
+      socket.emit(
+        SHARE_DRAW_CONFIG,
+        drawConfig,
+        roomKey !== null ? roomKey : socket.id
+      )
+
     colors[nextColor] = color.hex
     switch (nextColor) {
       case 0:
@@ -357,8 +398,29 @@ const Main = () => {
     else setNextColor(nextColor + 1)
   }
 
+  /**
+   * Set canvas context draw options
+   * @param {*} config the config that will be used to draw
+   */
+  const setCanvasContextConfig = (config) => {
+    ctx.strokeStyle = config.strokeStyle
+    ctx.lineJoin = config.lineJoin
+    ctx.lineWidth = config.lineWidth
+  }
+
   const restoreSavedColor = (button) => {
     ctx.strokeStyle = button.style.backgroundColor
+  }
+
+  const setLineWidth = (width) => {
+    ctx.lineWidth = width
+    drawConfig.lineWidth = width
+    if (isConnected)
+      socket.emit(
+        SHARE_DRAW_CONFIG,
+        drawConfig,
+        roomKey !== null ? roomKey : socket.id
+      )
   }
 
   /**
@@ -411,10 +473,10 @@ const Main = () => {
           <Divider orientation="vertical" flexItem />
           <div className={classes.shapesContainer}>
             Size
-            <button onClick={() => (ctx.lineWidth = 2)}>Line 1</button>
-            <button onClick={() => (ctx.lineWidth = 4)}>Line 2</button>
-            <button onClick={() => (ctx.lineWidth = 6)}>Line 3</button>
-            <button onClick={() => (ctx.lineWidth = 8)}>Line 4</button>
+            <button onClick={() => setLineWidth(2)}>Line 1</button>
+            <button onClick={() => setLineWidth(4)}>Line 2</button>
+            <button onClick={() => setLineWidth(6)}>Line 3</button>
+            <button onClick={() => setLineWidth(8)}>Line 4</button>
           </div>
           <Divider orientation="vertical" flexItem />
           <div className={classes.colorsContainer}>

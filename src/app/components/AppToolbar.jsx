@@ -59,8 +59,6 @@ const clientId =
 
 const handleLoginFailure = () => {}
 
-// let socket = null
-
 const AppToolbar = ({
   type,
   onOpenPopup,
@@ -124,7 +122,7 @@ const AppToolbar = ({
   }
 
   const emitImage = (image) => {
-    if (image) {
+    if (image && isConnected) {
       socket.emit(
         "broadcast image",
         image,

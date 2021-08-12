@@ -1,0 +1,1 @@
+export const SHARE_DRAW_CONFIG = "SHARE_DRAW_CONFIG"

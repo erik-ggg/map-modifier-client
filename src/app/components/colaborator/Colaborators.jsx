@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useState, useContext } from "react"
 import { useDispatch, useSelector } from "react-redux"
 import axios from "axios"
 
@@ -39,8 +39,7 @@ import {
   getColaborators,
 } from "../../services/api"
 import AlertComponent from "../alert/AlertComponent"
-
-import { setHttpRequestStatus } from "../../redux/slices/AppSlice"
+import { updateInRoom } from "../../redux/slices/AppSlice.js"
 
 const tableIcons = {
   Add: forwardRef((props, ref) => <AddBox {...props} ref={ref} />),
@@ -84,7 +83,7 @@ const useStyles = makeStyles({
   },
 })
 
-const Colaborators = () => {
+const Colaborators = (socket) => {
   const classes = useStyles()
   const dispatch = useDispatch()
   const httpRequestStatus = useSelector((res) => res.state.httpRequestStatus)
@@ -122,6 +121,12 @@ const Colaborators = () => {
       .catch((err) => {
         console.error(err)
       })
+  }
+
+  const joinColaborator = (targetConnectionId) => {
+    console.log(socket)
+    socket.emit("join room", { id: socket.id, targetId: targetConnectionId })
+    dispatch(updateInRoom(true))
   }
 
   const toggleModal = () => {
@@ -171,7 +176,7 @@ const Colaborators = () => {
           (rowData) => ({
             icon: "input",
             tooltip: "Join colaborator",
-            onClick: (event, rowData) => console.log("joined"),
+            onClick: (event, rowData) => joinColaborator(rowData.socketId),
             disabled: !rowData.isOnline,
           }),
           {

@@ -1,10 +1,9 @@
-import { act } from "react-dom/cjs/react-dom-test-utils.production.min"
-
 const { createSlice } = require("@reduxjs/toolkit")
 
 let initialState = {
   buttonConnectText: "Connect",
   img: null,
+  isHost: false,
   isConnected: false,
   isLogged: false,
   inRoom: false,
@@ -54,6 +53,9 @@ const appSlice = createSlice({
     setImage: (state, action) => {
       state.img = action.img
     },
+    setIsHost: (state, action) => {
+      state.isHost = action.payload
+    },
     setHttpRequestStatus: (state, action) => {
       state.httpRequestStatus = action.payload
     },
@@ -74,6 +76,7 @@ export const {
   logInAction,
   updateInRoom,
   setImage,
+  setIsHost,
   setHaveMap,
   setHttpRequestStatus,
   setSocket,

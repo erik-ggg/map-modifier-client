@@ -13,6 +13,12 @@ import { setHttpRequestStatus } from "./app/redux/slices/AppSlice"
 const App = () => {
   const dispatch = useDispatch()
 
+  // const [socket, setSocket] = useState(null)
+
+  // const handleSetSocket = (socket) => {
+  //   setSocket(socket)
+  // }
+
   useEffect(() => {
     // axios.interceptors.request.use((req, res) => {
     //   if (req.url.includes("colaborators")) {
