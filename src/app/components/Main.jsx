@@ -22,7 +22,11 @@ import {
   DISCONNECT_SUCCESSFULL,
 } from '../utils/literals.js'
 
-import { SHARE_DRAW_CONFIG } from '../shared/socket-actions'
+import {
+  BROADCAST_DRAWING,
+  RECEIVING_DRAWING,
+  SHARE_DRAW_CONFIG,
+} from '../shared/socket-actions'
 
 let prevPos = { offsetX: 0, offsetY: 0 }
 let line = []
@@ -226,21 +230,34 @@ const Main = () => {
     }
   }
 
-  const emitDrawing = (prevPos, currPos, room) => {
-    socket.emit('broadcast drawing', {
+  const emitDrawing = (prevPos, currPos, room, drawConfig) => {
+    socket.emit(BROADCAST_DRAWING, {
       prevPos: prevPos,
       currPos: currPos,
       room,
+      drawConfig,
     })
   }
 
-  const draw = (prevPosParam, currPos) => {
+  const draw = (prevPosParam, currPos, config) => {
     const { offsetX: x, offsetY: y } = prevPosParam
     const { offsetX, offsetY } = currPos
+
     if (inRoom) {
-      emitDrawing(prevPosParam, currPos, roomKey !== null ? roomKey : socket.id)
+      emitDrawing(
+        prevPosParam,
+        currPos,
+        roomKey !== null ? roomKey : socket.id,
+        drawConfig
+      )
     }
-    // ctx.save()
+
+    console.log('----- SHARE_DRAW_CONFIG:', ctx)
+    if (config) {
+      ctx.strokeStyle = config.strokeStyle
+      ctx.lineWidth = config.lineWidth
+    }
+
     ctx.beginPath()
     // Move the the prevPosition of the mouse
     ctx.moveTo(x, y)
@@ -249,19 +266,15 @@ const Main = () => {
     ctx.closePath()
     // Visualize the line using the strokeStyle
     ctx.stroke()
-    // ctx.restore()
+
+    if (config) {
+      ctx.strokeStyle = drawConfig.strokeStyle
+      ctx.lineWidth = drawConfig.lineWidth
+    }
+    console.log('----- SHARE_DRAW_CONFIG:', ctx)
+
     prevPos = { offsetX, offsetY }
   }
-
-  //   const showKey = () => {
-  //     alert(`User key: ${key}, copied to clipboard`)
-  //     const el = document.createElement("textarea")
-  //     el.value = key
-  //     document.body.appendChild(el)
-  //     el.select()
-  //     document.execCommand("copy")
-  //     document.body.removeChild(el)
-  //   }
 
   const disconnect = () => {
     socket.close()
@@ -313,8 +326,9 @@ const Main = () => {
           // setHaveMap(res)
         })
 
-        socket.on('receiving drawing', (res) => {
-          draw(res.prevPos, res.currPos)
+        socket.on(RECEIVING_DRAWING, (res) => {
+          console.log('----- SHARE_DRAW_CONFIG:', res.drawConfig)
+          draw(res.prevPos, res.currPos, res.drawConfig)
         })
 
         socket.on('user joined', () => {
@@ -367,12 +381,6 @@ const Main = () => {
   const saveColor = (color) => {
     drawConfig.strokeStyle = color.hex
     ctx.strokeStyle = color.hex
-    if (isConnected)
-      socket.emit(
-        SHARE_DRAW_CONFIG,
-        drawConfig,
-        roomKey !== null ? roomKey : socket.id
-      )
 
     colors[nextColor] = color.hex
     switch (nextColor) {
@@ -415,12 +423,6 @@ const Main = () => {
   const setLineWidth = (width) => {
     ctx.lineWidth = width
     drawConfig.lineWidth = width
-    if (isConnected)
-      socket.emit(
-        SHARE_DRAW_CONFIG,
-        drawConfig,
-        roomKey !== null ? roomKey : socket.id
-      )
   }
 
   /**
@@ -450,7 +452,7 @@ const Main = () => {
 
   return (
     <div>
-      <Toaster position='top-center' reverseOrder={false} />
+      <Toaster position="top-center" reverseOrder={false} />
       <AppToolbar
         type={EDITOR_TOOLBAR}
         connect={connect}
@@ -462,7 +464,7 @@ const Main = () => {
       {haveMap && (
         <Grid
           container
-          alignItems='center'
+          alignItems="center"
           className={classes.drawToolbarContainer}
         >
           <div className={classes.shapesContainer}>
@@ -471,7 +473,7 @@ const Main = () => {
             <button onClick={() => setDrawingFigure(2)}>Rectangle</button>
             <button onClick={() => setDrawingFigure(3)}>Circle</button>
           </div>
-          <Divider orientation='vertical' flexItem />
+          <Divider orientation="vertical" flexItem />
           <div className={classes.shapesContainer}>
             Size
             <button onClick={() => setLineWidth(2)}>Line 1</button>
@@ -479,10 +481,10 @@ const Main = () => {
             <button onClick={() => setLineWidth(6)}>Line 3</button>
             <button onClick={() => setLineWidth(8)}>Line 4</button>
           </div>
-          <Divider orientation='vertical' flexItem />
+          <Divider orientation="vertical" flexItem />
           <div className={classes.colorsContainer}>
             <div className={classes.colorsOptionsContainer}>
-              <TwitterPicker triangle='hide' onChangeComplete={saveColor} />
+              <TwitterPicker triangle="hide" onChangeComplete={saveColor} />
               <div className={classes.colorsSavesContainer}>
                 <button
                   className={classes.colorsSavesButtonClass}
@@ -526,17 +528,17 @@ const Main = () => {
           </div>
         </Grid>
       )}
-      <div className={classes.mapContainer} id='map-container'>
+      <div className={classes.mapContainer} id="map-container">
         <img
           ref={(ref) => (image = ref)}
           hidden={!haveMap}
           src={mapFile}
-          alt='map'
+          alt="map"
           onLoad={handleImageLoaded}
-          id='mapImage'
+          id="mapImage"
         />
         <canvas
-          id='mapCanvas'
+          id="mapCanvas"
           hidden={!haveMap}
           className={classes.canvas}
           ref={(ref) => (canvas = ref)}
