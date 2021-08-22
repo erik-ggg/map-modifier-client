@@ -1,17 +1,24 @@
-import "./App.css"
-import axios from "axios"
+import './App.css'
+import axios from 'axios'
 
-import { useDispatch } from "react-redux"
-import { useEffect } from "react"
-import { BrowserRouter as Router, Switch, Route } from "react-router-dom"
-import Colaborators from "./app/components/colaborator/Colaborators"
-import Main from "./app/components/Main"
-import { SESSION_STORAGE_USER_KEY } from "./app/shared/constants"
+import { io } from 'socket.io-client'
 
-import { setHttpRequestStatus } from "./app/redux/slices/AppSlice"
+import { useDispatch } from 'react-redux'
+import { useEffect } from 'react'
+import { BrowserRouter as Router, Switch, Route } from 'react-router-dom'
+import Colaborators from './app/components/colaborator/Colaborators'
+import Main from './app/components/Main'
+import { SESSION_STORAGE_USER_KEY } from './app/shared/constants'
+
+import { setHttpRequestStatus } from './app/redux/slices/AppSlice'
 
 const App = () => {
   const dispatch = useDispatch()
+
+  const socket = io('http://localhost:4000', {
+    reconnectionDelayMax: 10000,
+    reconnectionAttempts: 5,
+  })
 
   // const [socket, setSocket] = useState(null)
 
@@ -36,14 +43,18 @@ const App = () => {
     }
   })
 
+  const setSocket = (props) => {
+    socket = props
+  }
+
   return (
     <Router>
       <Switch>
         <Route path="/editor">
-          <Main />
+          <Main socket={socket} setSocket={setSocket} />
         </Route>
         <Route path="/colaborators">
-          <Colaborators />
+          <Colaborators socket={socket} />
         </Route>
       </Switch>
     </Router>

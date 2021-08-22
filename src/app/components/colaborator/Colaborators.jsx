@@ -1,45 +1,46 @@
-import { useEffect, useState, useContext } from "react"
-import { useDispatch, useSelector } from "react-redux"
-import axios from "axios"
+import { useEffect, useState, useContext } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
+import { useHistory } from 'react-router-dom'
+import axios from 'axios'
 
-import "./colaborators.css"
+import './colaborators.css'
 
-import { Button, makeStyles, TextField } from "@material-ui/core"
-import AppToolbar from "../AppToolbar"
+import { Button, makeStyles, TextField } from '@material-ui/core'
+import AppToolbar from '../AppToolbar'
 import {
   COLABORATORS_TOOLBAR,
   SESSION_STORAGE_USER_ID,
-} from "../../shared/constants"
-import MaterialTable from "material-table"
+} from '../../shared/constants'
+import MaterialTable from 'material-table'
 
-import AddBox from "@material-ui/icons/AddBox"
-import ArrowDownward from "@material-ui/icons/ArrowDownward"
-import Check from "@material-ui/icons/Check"
-import ChevronLeft from "@material-ui/icons/ChevronLeft"
-import ChevronRight from "@material-ui/icons/ChevronRight"
-import Clear from "@material-ui/icons/Clear"
-import DeleteOutline from "@material-ui/icons/DeleteOutline"
-import Edit from "@material-ui/icons/Edit"
-import FilterList from "@material-ui/icons/FilterList"
-import FirstPage from "@material-ui/icons/FirstPage"
-import LastPage from "@material-ui/icons/LastPage"
-import Remove from "@material-ui/icons/Remove"
-import SaveAlt from "@material-ui/icons/SaveAlt"
-import Search from "@material-ui/icons/Search"
-import ViewColumn from "@material-ui/icons/ViewColumn"
-import InputIcon from "@material-ui/icons/Input"
+import AddBox from '@material-ui/icons/AddBox'
+import ArrowDownward from '@material-ui/icons/ArrowDownward'
+import Check from '@material-ui/icons/Check'
+import ChevronLeft from '@material-ui/icons/ChevronLeft'
+import ChevronRight from '@material-ui/icons/ChevronRight'
+import Clear from '@material-ui/icons/Clear'
+import DeleteOutline from '@material-ui/icons/DeleteOutline'
+import Edit from '@material-ui/icons/Edit'
+import FilterList from '@material-ui/icons/FilterList'
+import FirstPage from '@material-ui/icons/FirstPage'
+import LastPage from '@material-ui/icons/LastPage'
+import Remove from '@material-ui/icons/Remove'
+import SaveAlt from '@material-ui/icons/SaveAlt'
+import Search from '@material-ui/icons/Search'
+import ViewColumn from '@material-ui/icons/ViewColumn'
+import InputIcon from '@material-ui/icons/Input'
 
-import { forwardRef } from "react"
+import { forwardRef } from 'react'
 
-import Modal from "react-modal"
+import Modal from 'react-modal'
 
 import {
   addColaborator,
   deleteColaborator,
   getColaborators,
-} from "../../services/api"
-import AlertComponent from "../alert/AlertComponent"
-import { updateInRoom } from "../../redux/slices/AppSlice.js"
+} from '../../services/api'
+import AlertComponent from '../alert/AlertComponent'
+import { updateInRoom } from '../../redux/slices/AppSlice.js'
 
 const tableIcons = {
   Add: forwardRef((props, ref) => <AddBox {...props} ref={ref} />),
@@ -65,27 +66,30 @@ const tableIcons = {
   ViewColumn: forwardRef((props, ref) => <ViewColumn {...props} ref={ref} />),
 }
 
-Modal.setAppElement("#root")
+Modal.setAppElement('#root')
 
 const useStyles = makeStyles({
   table: {
     minWidth: 650,
   },
   buttonsContainer: {
-    display: "flex",
-    justifyContent: "space-evenly",
+    display: 'flex',
+    justifyContent: 'space-evenly',
   },
   emailform: {
-    marginBottom: "1rem",
+    marginBottom: '1rem',
   },
   addColaboratorTitle: {
-    textAlign: "center",
+    textAlign: 'center',
   },
 })
 
-const Colaborators = (socket) => {
+const Colaborators = ({ socket }) => {
   const classes = useStyles()
   const dispatch = useDispatch()
+  const history = useHistory()
+
+  const isConnected = useSelector((res) => res.state.isConnected)
   const httpRequestStatus = useSelector((res) => res.state.httpRequestStatus)
   const user = useSelector((res) => res.state.user)
 
@@ -123,10 +127,12 @@ const Colaborators = (socket) => {
       })
   }
 
-  const joinColaborator = (targetConnectionId) => {
-    console.log(socket)
-    socket.emit("join room", { id: socket.id, targetId: targetConnectionId })
-    dispatch(updateInRoom(true))
+  const joinColaborator = (socketId) => {
+    if (socketId) {
+      history.push('/editor')
+      socket.emit('join room', { id: socket.id, targetId: socketId })
+      dispatch(updateInRoom(true))
+    }
   }
 
   const toggleModal = () => {
@@ -151,20 +157,20 @@ const Colaborators = (socket) => {
       {httpRequestStatus !== null && <AlertComponent />}
       <MaterialTable
         columns={[
-          { title: "Name", field: "name" },
-          { title: "Email", field: "email" },
+          { title: 'Name', field: 'name' },
+          { title: 'Email', field: 'email' },
           {
-            title: "Online",
-            field: "isOnline",
+            title: 'Online',
+            field: 'isOnline',
             render: (rowData) => (
               <img
                 src={`${
                   rowData.isOnline
-                    ? process.env.PUBLIC_URL + "online.png"
-                    : process.env.PUBLIC_URL + "offline.png"
+                    ? process.env.PUBLIC_URL + 'online.png'
+                    : process.env.PUBLIC_URL + 'offline.png'
                 }`}
                 alt=""
-                style={{ width: 40, borderRadius: "50%" }}
+                style={{ width: 40, borderRadius: '50%' }}
               />
             ),
           },
@@ -174,22 +180,22 @@ const Colaborators = (socket) => {
         title="Colaborators"
         actions={[
           (rowData) => ({
-            icon: "input",
-            tooltip: "Join colaborator",
+            icon: 'input',
+            tooltip: 'Join colaborator',
             onClick: (event, rowData) => joinColaborator(rowData.socketId),
-            disabled: !rowData.isOnline,
+            disabled: !rowData.isOnline || !isConnected,
           }),
           {
-            icon: "delete",
-            tooltip: "Delete User",
+            icon: 'delete',
+            tooltip: 'Delete User',
             onClick: (event, rowData) => deleteColaboratorAction(rowData.email),
           },
           {
-            icon: "refresh",
-            tooltip: "Refresh",
+            icon: 'refresh',
+            tooltip: 'Refresh',
             isFreeAction: true,
             actionsColumnIndex: -1,
-            toolbarButtonAlignment: "left",
+            toolbarButtonAlignment: 'left',
             onClick: (event) => {
               getColaborators(user.email).then((colaborators) => {
                 setColaborators(colaborators.data)
@@ -198,7 +204,7 @@ const Colaborators = (socket) => {
           },
         ]}
         options={{
-          toolbarButtonAlignment: "left",
+          toolbarButtonAlignment: 'left',
           actionsColumnIndex: -1,
         }}
       />

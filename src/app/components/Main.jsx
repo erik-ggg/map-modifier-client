@@ -12,7 +12,6 @@ import {
   updateInRoom,
   setIsHost,
   setHaveMap,
-  setSocket,
 } from '../redux/slices/AppSlice'
 import { io } from 'socket.io-client'
 import toast, { Toaster } from 'react-hot-toast'
@@ -34,7 +33,6 @@ let color0, color1, color2, color3, color4
 let colors = []
 let canvas
 let image
-let socket = null
 
 const useStyles = makeStyles((theme) => ({
   mapContainer: {
@@ -91,7 +89,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }))
 
-const Main = () => {
+const Main = ({ socket, setSocket }) => {
   const classes = useStyles()
   const dispatch = useDispatch()
   const roomKey = useSelector((res) => res.state.roomKey)
@@ -286,11 +284,16 @@ const Main = () => {
       socket.close()
       dispatch(updateInRoom(false))
     } else {
+      if (socket.disconnected) {
+        socket.connect()
+      }
+
       if (user) {
-        socket = io('http://localhost:4000', {
-          reconnectionDelayMax: 10000,
-          reconnectionAttempts: 5,
-        })
+        socket.emit('connected')
+        // socket = io('http://localhost:4000', {
+        //   reconnectionDelayMax: 10000,
+        //   reconnectionAttempts: 5,
+        // })
 
         // setSocket(socket)
         console.log(socket)
@@ -304,7 +307,7 @@ const Main = () => {
             })
             .then((res) => {
               console.log(res)
-              setSocket(socket)
+              // setSocket(socket)
               // handleSetSocket(socket)
               dispatch(connectedAction())
               toast.success(CONNECT_SUCCESSFULL)
