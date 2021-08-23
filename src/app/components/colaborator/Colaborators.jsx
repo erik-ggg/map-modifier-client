@@ -140,9 +140,11 @@ const Colaborators = ({ socket }) => {
   }
 
   useEffect(() => {
-    getColaborators(user.email).then((colaborators) => {
-      setColaborators(colaborators.data)
-    })
+    if (user) {
+      getColaborators(user.email).then((colaborators) => {
+        setColaborators(colaborators.data)
+      })
+    }
   }, [user])
 
   useEffect(() => {}, [colaborators])

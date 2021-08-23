@@ -1,4 +1,4 @@
-import "../../App.css"
+import '../../App.css'
 import {
   AppBar,
   Button,
@@ -9,24 +9,24 @@ import {
   TextField,
   Toolbar,
   Typography,
-} from "@material-ui/core"
-import RefreshIcon from "@material-ui/icons/Refresh"
-import MenuIcon from "@material-ui/icons/Menu"
+} from '@material-ui/core'
+import RefreshIcon from '@material-ui/icons/Refresh'
+import MenuIcon from '@material-ui/icons/Menu'
 
-import Fab from "@material-ui/core/Fab"
-import toast from "react-hot-toast"
+import Fab from '@material-ui/core/Fab'
+import toast from 'react-hot-toast'
 
-import { GoogleLogin } from "react-google-login"
+import { GoogleLogin } from 'react-google-login'
 
-import { useDispatch, useSelector } from "react-redux"
+import { useDispatch, useSelector } from 'react-redux'
 import {
   setHaveMap,
   updateInRoom,
   addUserData,
   logInAction,
-} from "../redux/slices/AppSlice"
-import { useState } from "react"
-import { Link } from "react-router-dom"
+} from '../redux/slices/AppSlice'
+import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import {
   COLABORATORS_TOOLBAR,
   EDITOR_TOOLBAR,
@@ -34,7 +34,9 @@ import {
   SESSION_STORAGE_USER_ID,
   CONNECT_BUTTON_CONNECT,
   CONNECT_BUTTON_DISCONNECT,
-} from "../shared/constants"
+  SESSION_STORAGE_USER,
+  SESSION_STORAGE_LOGGED,
+} from '../shared/constants'
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -47,15 +49,15 @@ const useStyles = makeStyles((theme) => ({
     flexGrow: 1,
   },
   connectOptionsContainer: {
-    display: "flex",
+    display: 'flex',
   },
   connectOptionsContainerAux: {
-    display: "flex",
+    display: 'flex',
   },
 }))
 
 const clientId =
-  "650564013529-agbmjjd0nm6cptp04aoqrmo6ijk0ae3q.apps.googleusercontent.com"
+  '650564013529-agbmjjd0nm6cptp04aoqrmo6ijk0ae3q.apps.googleusercontent.com'
 
 const handleLoginFailure = () => {}
 
@@ -81,8 +83,8 @@ const AppToolbar = ({
   const [anchorEl, setAnchorEl] = useState(null)
   // const [connected, setConnected] = useState(false)
   // const [logged, setLogged] = useState(false)
-  const [mapFile, setMapFile] = useState("")
-  const [targetConnectionId, setTargetConnectionId] = useState("")
+  const [mapFile, setMapFile] = useState('')
+  const [targetConnectionId, setTargetConnectionId] = useState('')
   const [haveMap, setHaveMapState] = useState(false)
   // const [userMail, setUserMail] = useState(null)
 
@@ -97,7 +99,7 @@ const AppToolbar = ({
   }
 
   const join = () => {
-    socket.emit("join room", { id: socket.id, targetId: targetConnectionId })
+    socket.emit('join room', { id: socket.id, targetId: targetConnectionId })
     dispatch(updateInRoom(true))
   }
 
@@ -108,11 +110,11 @@ const AppToolbar = ({
       email: res.profileObj.email,
       id: res.googleId,
     }
+    sessionStorage.setItem(SESSION_STORAGE_USER, JSON.stringify(user))
+    sessionStorage.setItem(SESSION_STORAGE_LOGGED, true)
     dispatch(addUserData(user))
     dispatch(logInAction())
     // setUserMail(res.profileObj.email)
-    sessionStorage.setItem(SESSION_STORAGE_USER_KEY, res.googleId)
-    sessionStorage.setItem(SESSION_STORAGE_USER_ID, res.profileObj.name)
     connect()
   }
 
@@ -124,7 +126,7 @@ const AppToolbar = ({
   const emitImage = (image) => {
     if (image && isConnected) {
       socket.emit(
-        "broadcast image",
+        'broadcast image',
         image,
         roomKey !== null ? roomKey : socket.id
       )
@@ -255,7 +257,7 @@ const AppToolbar = ({
                 buttonText="Login"
                 onSuccess={handleLoginSuccess}
                 onFailure={handleLoginFailure}
-                cookiePolicy={"single_host_origin"}
+                cookiePolicy={'single_host_origin'}
                 responseType="code,token"
               />
             )}

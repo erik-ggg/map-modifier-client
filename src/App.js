@@ -8,7 +8,12 @@ import { useEffect } from 'react'
 import { BrowserRouter as Router, Switch, Route } from 'react-router-dom'
 import Colaborators from './app/components/colaborator/Colaborators'
 import Main from './app/components/Main'
-import { SESSION_STORAGE_USER_KEY } from './app/shared/constants'
+import {
+  SESSION_STORAGE_LOGGED,
+  SESSION_STORAGE_USER,
+  SESSION_STORAGE_USER_KEY,
+} from './app/shared/constants'
+import { addUserData, logInAction } from './app/redux/slices/AppSlice'
 
 import { setHttpRequestStatus } from './app/redux/slices/AppSlice'
 
@@ -32,6 +37,12 @@ const App = () => {
     //     console.log(req, res)
     //   }
     // })
+    if (sessionStorage.getItem(SESSION_STORAGE_LOGGED)) {
+      dispatch(
+        addUserData(JSON.parse(sessionStorage.getItem(SESSION_STORAGE_USER)))
+      )
+      dispatch(logInAction())
+    }
     axios.interceptors.response.use(undefined, (err) => {
       if (err.response.status === 404) {
         dispatch(setHttpRequestStatus(404))
