@@ -13,7 +13,6 @@ import {
   setIsHost,
   setHaveMap,
 } from '../redux/slices/AppSlice'
-import { io } from 'socket.io-client'
 import toast, { Toaster } from 'react-hot-toast'
 import {
   LOGIN_SUCCESSFULL,
@@ -89,7 +88,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }))
 
-const Main = ({ socket, setSocket }) => {
+const Main = ({ socket }) => {
   const classes = useStyles()
   const dispatch = useDispatch()
   const roomKey = useSelector((res) => res.state.roomKey)
@@ -105,6 +104,7 @@ const Main = ({ socket, setSocket }) => {
   const [isPainting, setIsPainting] = useState(false)
   const [nextColor, setNextColor] = useState(0)
   const [drawingFigure, setDrawingFigure] = useState(0)
+  const [haveMapAux, setHaveMapAux] = useState(null)
   const [drawConfig, setDrawConfig] = useState({
     lineJoin: 'round',
     lineWidth: 2,
@@ -113,9 +113,6 @@ const Main = ({ socket, setSocket }) => {
 
   useEffect(() => {
     const ctxAux = canvas.getContext('2d')
-    // ctxAux.strokeStyle = drawConfig.strokeStyle
-    // ctxAux.lineJoin = drawConfig.lineJoin
-    // ctxAux.lineWidth = drawConfig.lineWidth
     setCtx(ctxAux)
   }, [ctx])
 
@@ -250,7 +247,6 @@ const Main = ({ socket, setSocket }) => {
       )
     }
 
-    console.log('----- SHARE_DRAW_CONFIG:', ctx)
     if (config) {
       ctx.strokeStyle = config.strokeStyle
       ctx.lineWidth = config.lineWidth
@@ -269,19 +265,18 @@ const Main = ({ socket, setSocket }) => {
       ctx.strokeStyle = drawConfig.strokeStyle
       ctx.lineWidth = drawConfig.lineWidth
     }
-    console.log('----- SHARE_DRAW_CONFIG:', ctx)
 
     prevPos = { offsetX, offsetY }
   }
 
   const disconnect = () => {
-    socket.close()
+    socket.emit('disconnect')
     dispatch(updateInRoom(false))
   }
 
   const connect = () => {
     if (isConnected) {
-      socket.close()
+      socket.emit('disconnect')
       dispatch(updateInRoom(false))
     } else {
       if (socket.disconnected) {
@@ -289,35 +284,14 @@ const Main = ({ socket, setSocket }) => {
       }
 
       if (user) {
-        socket.emit('connected')
-        // socket = io('http://localhost:4000', {
-        //   reconnectionDelayMax: 10000,
-        //   reconnectionAttempts: 5,
+        // socket.emit('connected')
+        // socket.on('connected', () => {
         // })
 
-        // setSocket(socket)
-        console.log(socket)
-
-        socket.on('connected', () => {
-          axios
-            .post(`http://localhost:4000/api/users`, {
-              name: user.name,
-              email: user.email,
-              socketId: socket.id,
-            })
-            .then((res) => {
-              console.log(res)
-              // setSocket(socket)
-              // handleSetSocket(socket)
-              dispatch(connectedAction())
-              toast.success(CONNECT_SUCCESSFULL)
-            })
-        })
-
-        socket.on('disconnect', () => {
-          toast.success(DISCONNECT_SUCCESSFULL)
-          dispatch(disconnectedAction())
-        })
+        // socket.on('disconnect', () => {
+        //   toast.success(DISCONNECT_SUCCESSFULL)
+        //   dispatch(disconnectedAction())
+        // })
 
         socket.on('broadcast res', (res) => {
           console.log('broadcast res', res)
@@ -325,19 +299,22 @@ const Main = ({ socket, setSocket }) => {
 
         socket.on('receiving image', (res) => {
           dispatch(setHaveMap(true))
-          setMapFile(res.image)
+          console.log(res)
+          setMapFile('receiving map', res.image)
           // setHaveMap(res)
         })
 
         socket.on(RECEIVING_DRAWING, (res) => {
-          console.log('----- SHARE_DRAW_CONFIG:', res.drawConfig)
           draw(res.prevPos, res.currPos, res.drawConfig)
         })
 
         socket.on('user joined', () => {
           dispatch(setIsHost(true))
           dispatch(updateInRoom(true))
+          console.log(haveMap)
+          console.log(haveMapAux)
           if (haveMap) {
+            console.log('user joined, sharing map', mapFile)
             socket.emit(
               'broadcast image',
               mapFile,
@@ -366,7 +343,6 @@ const Main = ({ socket, setSocket }) => {
         })
 
         socket.on(SHARE_DRAW_CONFIG, (config) => {
-          console.log('RECEIVE: SHARE_DRAW_CONFIG', config)
           setDrawConfig(config)
           setCanvasContextConfig(config)
         })

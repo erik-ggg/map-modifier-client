@@ -12,6 +12,7 @@ import {
 } from '@material-ui/core'
 import RefreshIcon from '@material-ui/icons/Refresh'
 import MenuIcon from '@material-ui/icons/Menu'
+import axios from 'axios'
 
 import Fab from '@material-ui/core/Fab'
 import toast from 'react-hot-toast'
@@ -20,12 +21,20 @@ import { GoogleLogin } from 'react-google-login'
 
 import { useDispatch, useSelector } from 'react-redux'
 import {
+  connectedAction,
+  disconnectedAction,
   setHaveMap,
   updateInRoom,
   addUserData,
   logInAction,
 } from '../redux/slices/AppSlice'
 import { useState } from 'react'
+
+import {
+  CONNECT_SUCCESSFULL,
+  DISCONNECT_SUCCESSFULL,
+} from '../utils/literals.js'
+
 import { Link } from 'react-router-dom'
 import {
   COLABORATORS_TOOLBAR,
@@ -74,27 +83,33 @@ const AppToolbar = ({
   const classes = useStyles()
   const dispatch = useDispatch()
   const roomKey = useSelector((res) => res.state.roomKey)
-  // const inRoom = useSelector((res) => res.state.inRoom)
-  // const buttonConnectText = useSelector((res) => res.state.buttonConnectText)
   const userId = useSelector((res) => res.state.userId)
   const isConnected = useSelector((res) => res.state.isConnected)
   const isLogged = useSelector((res) => res.state.isLogged)
+  const user = useSelector((res) => res.state.user)
 
   const [anchorEl, setAnchorEl] = useState(null)
-  // const [connected, setConnected] = useState(false)
-  // const [logged, setLogged] = useState(false)
   const [mapFile, setMapFile] = useState('')
   const [targetConnectionId, setTargetConnectionId] = useState('')
   const [haveMap, setHaveMapState] = useState(false)
-  // const [userMail, setUserMail] = useState(null)
 
   const handleConnectButton = () => {
     if (isConnected) {
-      // setConnected(false)
-      disconnect()
+      socket.emit('disconnected')
+      dispatch(disconnectedAction())
+      dispatch(updateInRoom(false))
+      toast.success(DISCONNECT_SUCCESSFULL)
     } else {
-      // setConnected(true)
-      connect()
+      axios
+        .post(`http://localhost:4000/api/users`, {
+          name: user.name,
+          email: user.email,
+          socketId: socket.id,
+        })
+        .then(() => {
+          dispatch(connectedAction())
+          toast.success(CONNECT_SUCCESSFULL)
+        })
     }
   }
 
@@ -104,7 +119,6 @@ const AppToolbar = ({
   }
 
   const handleLoginSuccess = (res) => {
-    // setLogged(true)
     const user = {
       name: res.profileObj.name,
       email: res.profileObj.email,
@@ -114,7 +128,6 @@ const AppToolbar = ({
     sessionStorage.setItem(SESSION_STORAGE_LOGGED, true)
     dispatch(addUserData(user))
     dispatch(logInAction())
-    // setUserMail(res.profileObj.email)
     connect()
   }
 

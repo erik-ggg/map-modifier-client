@@ -5,13 +5,17 @@ import { io } from 'socket.io-client'
 
 import { useDispatch } from 'react-redux'
 import { useEffect } from 'react'
-import { BrowserRouter as Router, Switch, Route } from 'react-router-dom'
+import {
+  BrowserRouter as Router,
+  Switch,
+  Route,
+  Redirect,
+} from 'react-router-dom'
 import Colaborators from './app/components/colaborator/Colaborators'
 import Main from './app/components/Main'
 import {
   SESSION_STORAGE_LOGGED,
   SESSION_STORAGE_USER,
-  SESSION_STORAGE_USER_KEY,
 } from './app/shared/constants'
 import { addUserData, logInAction } from './app/redux/slices/AppSlice'
 
@@ -24,12 +28,6 @@ const App = () => {
     reconnectionDelayMax: 10000,
     reconnectionAttempts: 5,
   })
-
-  // const [socket, setSocket] = useState(null)
-
-  // const handleSetSocket = (socket) => {
-  //   setSocket(socket)
-  // }
 
   useEffect(() => {
     // axios.interceptors.request.use((req, res) => {
@@ -48,21 +46,20 @@ const App = () => {
         dispatch(setHttpRequestStatus(404))
       }
     })
-    if (window.performance && performance.navigation.type === 1) {
-      const userId = sessionStorage.getItem(SESSION_STORAGE_USER_KEY)
-      // dispatch(addUserId(userId))
-    }
   })
-
-  const setSocket = (props) => {
-    socket = props
-  }
 
   return (
     <Router>
       <Switch>
+        <Route
+          exact
+          path="/"
+          render={() => {
+            return <Redirect to="/editor" />
+          }}
+        />
         <Route path="/editor">
-          <Main socket={socket} setSocket={setSocket} />
+          <Main socket={socket} />
         </Route>
         <Route path="/colaborators">
           <Colaborators socket={socket} />
