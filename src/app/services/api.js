@@ -1,8 +1,8 @@
-import axios from "axios"
+import axios from 'axios'
 
-const apiUri = "http://localhost:4000/api/"
-const deleteColaboratorUri = apiUri + "colaborators/delete"
-const addColaboratorUri = apiUri + "colaborators/add"
+const apiUri = 'http://localhost:4000/api/'
+const deleteColaboratorUri = apiUri + 'colaborators'
+const addColaboratorUri = apiUri + 'colaborators'
 
 /**
  * Sends the petition to delete the colaborator of the given user
@@ -16,7 +16,7 @@ export const deleteColaborator = (userId, colaboratorEmail) => {
   })
   return axios.delete(deleteColaboratorUri, {
     data: data,
-    headers: { "Content-Type": "application/json" },
+    headers: { 'Content-Type': 'application/json' },
   })
 }
 
@@ -28,10 +28,10 @@ export const deleteColaborator = (userId, colaboratorEmail) => {
 export const addColaborator = (email, colaboratorEmail) => {
   const data = JSON.stringify({
     source: email,
-    tarjet: colaboratorEmail,
+    target: colaboratorEmail,
   })
   return axios.post(addColaboratorUri, data, {
-    headers: { "Content-Type": "application/json" },
+    headers: { 'Content-Type': 'application/json' },
   })
 }
 

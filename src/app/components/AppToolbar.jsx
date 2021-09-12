@@ -114,7 +114,7 @@ const AppToolbar = ({
   }
 
   const join = () => {
-    socket.emit('join room', { id: socket.id, targetId: targetConnectionId })
+    socket.emit('join room', targetConnectionId)
     dispatch(updateInRoom(true))
   }
 

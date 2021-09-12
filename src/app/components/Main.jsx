@@ -270,7 +270,7 @@ const Main = ({ socket }) => {
   }
 
   const disconnect = () => {
-    socket.emit('disconnect')
+    socket.emit('disconnected')
     dispatch(updateInRoom(false))
   }
 
