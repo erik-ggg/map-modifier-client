@@ -130,7 +130,7 @@ const Colaborators = ({ socket }) => {
   const joinColaborator = (socketId) => {
     if (socketId) {
       history.push('/editor')
-      socket.emit('join room', { id: socket.id, targetId: socketId })
+      socket.emit('join room', socketId)
       dispatch(updateInRoom(true))
     }
   }
