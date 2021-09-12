@@ -73,8 +73,6 @@ const handleLoginFailure = () => {}
 const AppToolbar = ({
   type,
   onOpenPopup,
-  connect,
-  disconnect,
   download,
   refresh,
   socket,
@@ -128,7 +126,6 @@ const AppToolbar = ({
     sessionStorage.setItem(SESSION_STORAGE_LOGGED, true)
     dispatch(addUserData(user))
     dispatch(logInAction())
-    connect()
   }
 
   const showKey = () => {
@@ -138,11 +135,10 @@ const AppToolbar = ({
 
   const emitImage = (image) => {
     if (image && isConnected) {
-      socket.emit(
-        'broadcast image',
-        image,
-        roomKey !== null ? roomKey : socket.id
-      )
+      socket.emit('broadcast image', {
+        image: image,
+        room: roomKey !== null ? roomKey : socket.id,
+      })
     }
   }
 
