@@ -287,67 +287,61 @@ const Main = ({ socket }) => {
         // socket.emit('connected')
         // socket.on('connected', () => {
         // })
-
         // socket.on('disconnect', () => {
         //   toast.success(DISCONNECT_SUCCESSFULL)
         //   dispatch(disconnectedAction())
         // })
-
-        socket.on('broadcast res', (res) => {
-          console.log('broadcast res', res)
-        })
-
-        socket.on('receiving image', (res) => {
-          dispatch(setHaveMap(true))
-          console.log(res)
-          setMapFile('receiving map', res.image)
-          // setHaveMap(res)
-        })
-
-        socket.on(RECEIVING_DRAWING, (res) => {
-          draw(res.prevPos, res.currPos, res.drawConfig)
-        })
-
-        socket.on('user joined', () => {
-          dispatch(setIsHost(true))
-          dispatch(updateInRoom(true))
-          console.log(haveMap)
-          console.log(haveMapAux)
-          if (haveMap) {
-            console.log('user joined, sharing map', mapFile)
-            socket.emit(
-              'broadcast image',
-              mapFile,
-              roomKey !== null ? roomKey : socket.id
-            )
-          }
-          socket.emit(
-            SHARE_DRAW_CONFIG,
-            drawConfig,
-            roomKey !== null ? roomKey : socket.id
-          )
-          toast('User joined!', {
-            icon: '🙋‍♀️',
-          })
-        })
-
-        socket.on('joined', (targetId) => {
-          dispatch(addKey(targetId))
-          toast.success('Joined!')
-        })
-
-        socket.on('already joined', () => {
-          toast('Already joined!', {
-            icon: '⚠️',
-          })
-        })
-
-        socket.on(SHARE_DRAW_CONFIG, (config) => {
-          setDrawConfig(config)
-          setCanvasContextConfig(config)
-        })
+        //
       } else {
+        // socket.on('broadcast res', (res) => {
+        //   console.log('broadcast res', res)
+        // })
+        // socket.on('receiving image', (res) => {
+        //   dispatch(setHaveMap(true))
+        //   console.log(res)
+        //   setMapFile('receiving map', res.image)
+        //   // setHaveMap(res)
+        // })
+        // socket.on(RECEIVING_DRAWING, (res) => {
+        //   draw(res.prevPos, res.currPos, res.drawConfig)
+        // })
+        // socket.on('user joined', () => {
+        //   dispatch(setIsHost(true))
+        //   dispatch(updateInRoom(true))
+        //   console.log(haveMap)
+        //   console.log(haveMapAux)
+        //   if (haveMap) {
+        //     console.log('user joined, sharing map', mapFile)
+        //     socket.emit(
+        //       'broadcast image',
+        //       mapFile,
+        //       roomKey !== null ? roomKey : socket.id
+        //     )
+        //   }
+        //   socket.emit(
+        //     SHARE_DRAW_CONFIG,
+        //     drawConfig,
+        //     roomKey !== null ? roomKey : socket.id
+        //   )
+        //   toast('User joined!', {
+        //     icon: '🙋‍♀️',
+        //   })
+        // })
+        // socket.on('joined', (targetId) => {
+        //   dispatch(addKey(targetId))
+        //   toast.success('Joined!')
+        // })
+        // socket.on('already joined', () => {
+        //   toast('Already joined!', {
+        //     icon: '⚠️',
+        //   })
+        // })
+        // socket.on(SHARE_DRAW_CONFIG, (config) => {
+        //   setDrawConfig(config)
+        //   setCanvasContextConfig(config)
+        // })
         //@todo: throw error
+        // }
       }
     }
   }
@@ -431,7 +425,7 @@ const Main = ({ socket }) => {
 
   return (
     <div>
-      <Toaster position="top-center" reverseOrder={false} />
+      {/* <Toaster position='top-center' reverseOrder={false} /> */}
       <AppToolbar
         type={EDITOR_TOOLBAR}
         connect={connect}
@@ -443,7 +437,7 @@ const Main = ({ socket }) => {
       {haveMap && (
         <Grid
           container
-          alignItems="center"
+          alignItems='center'
           className={classes.drawToolbarContainer}
         >
           <div className={classes.shapesContainer}>
@@ -452,7 +446,7 @@ const Main = ({ socket }) => {
             <button onClick={() => setDrawingFigure(2)}>Rectangle</button>
             <button onClick={() => setDrawingFigure(3)}>Circle</button>
           </div>
-          <Divider orientation="vertical" flexItem />
+          <Divider orientation='vertical' flexItem />
           <div className={classes.shapesContainer}>
             Size
             <button onClick={() => setLineWidth(2)}>Line 1</button>
@@ -460,10 +454,10 @@ const Main = ({ socket }) => {
             <button onClick={() => setLineWidth(6)}>Line 3</button>
             <button onClick={() => setLineWidth(8)}>Line 4</button>
           </div>
-          <Divider orientation="vertical" flexItem />
+          <Divider orientation='vertical' flexItem />
           <div className={classes.colorsContainer}>
             <div className={classes.colorsOptionsContainer}>
-              <TwitterPicker triangle="hide" onChangeComplete={saveColor} />
+              <TwitterPicker triangle='hide' onChangeComplete={saveColor} />
               <div className={classes.colorsSavesContainer}>
                 <button
                   className={classes.colorsSavesButtonClass}
@@ -507,17 +501,17 @@ const Main = ({ socket }) => {
           </div>
         </Grid>
       )}
-      <div className={classes.mapContainer} id="map-container">
+      <div className={classes.mapContainer} id='map-container'>
         <img
           ref={(ref) => (image = ref)}
           hidden={!haveMap}
           src={mapFile}
-          alt="map"
+          alt='map'
           onLoad={handleImageLoaded}
-          id="mapImage"
+          id='mapImage'
         />
         <canvas
-          id="mapCanvas"
+          id='mapCanvas'
           hidden={!haveMap}
           className={classes.canvas}
           ref={(ref) => (canvas = ref)}
