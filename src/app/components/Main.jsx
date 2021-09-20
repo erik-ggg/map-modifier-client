@@ -22,8 +22,10 @@ import {
 
 import {
   BROADCAST_DRAWING,
+  END_DRAWING,
   RECEIVING_DRAWING,
   SHARE_DRAW_CONFIG,
+  START_DRAWING,
 } from '../shared/socket-actions'
 
 let prevPos = { offsetX: 0, offsetY: 0 }
@@ -112,6 +114,14 @@ const Main = ({ socket }) => {
   })
 
   useEffect(() => {
+    socket.on(END_DRAWING, () => {
+      console.log('Ended drawing event')
+    })
+
+    socket.on(START_DRAWING, (config) => {
+      console.log('Started drawing event')
+    })
+
     socket.on(SHARE_DRAW_CONFIG, (config) => {
       setDrawConfig(config)
       setCanvasContextConfig(config)
@@ -125,14 +135,13 @@ const Main = ({ socket }) => {
     })
 
     socket.on(RECEIVING_DRAWING, (res) => {
-      draw(res.prevPos, res.currPos, res.drawConfig)
+      // console.log('Data received from server', res)
+      drawDataReceived(res.prevPos, res.currPos, res.drawConfig)
     })
 
     socket.on('user joined', () => {
       dispatch(setIsHost(true))
       dispatch(updateInRoom(true))
-      console.log(haveMap)
-      console.log(haveMapAux)
       if (haveMap) {
         console.log('user joined, sharing map', mapFile)
         socket.emit(
@@ -150,10 +159,14 @@ const Main = ({ socket }) => {
         icon: '🙋‍♀️',
       })
     })
-
-    const ctxAux = canvas.getContext('2d')
-    setCtx(ctxAux)
   }, [])
+
+  useEffect(() => {
+    console.log('Context effect is being call', ctx)
+    if (!ctx) {
+      setCtx(canvas.getContext('2d'))
+    }
+  }, [ctx])
 
   const handleImageLoaded = () => {
     canvas.height = image.height
@@ -164,6 +177,10 @@ const Main = ({ socket }) => {
     const { offsetX, offsetY } = nativeEvent
     setIsPainting(true)
     prevPos = { offsetX, offsetY }
+    socket.emit(START_DRAWING, {
+      room: roomKey !== null ? roomKey : socket.id,
+      drawConfig: drawConfig,
+    })
   }
 
   const onMouseMove = ({ nativeEvent }) => {
@@ -212,6 +229,7 @@ const Main = ({ socket }) => {
       ctx.arc(prevPos.offsetX, prevPos.offsetY, r, 0, 2 * Math.PI)
       ctx.stroke()
     }
+    socket.emit(END_DRAWING, { room: roomKey !== null ? roomKey : socket.id })
   }
 
   const emitDrawing = (prevPos, currPos, room, drawConfig) => {
@@ -221,6 +239,25 @@ const Main = ({ socket }) => {
       room,
       drawConfig,
     })
+  }
+
+  const drawDataReceived = (prevPosParam, currPos, config) => {
+    const context = canvas.getContext('2d')
+    if (context) {
+      const { offsetX: x, offsetY: y } = prevPosParam
+      const { offsetX, offsetY } = currPos
+
+      context.beginPath()
+      // Move the the prevPosition of the mouse
+      context.moveTo(x, y)
+      // Draw a line to the current position of the mouse
+      context.lineTo(offsetX, offsetY)
+      context.closePath()
+      // Visualize the line using the strokeStyle
+      context.stroke()
+
+      prevPos = { offsetX, offsetY }
+    }
   }
 
   const draw = (prevPosParam, currPos, config) => {
@@ -236,15 +273,15 @@ const Main = ({ socket }) => {
       )
     }
 
-    if (!ctx) {
-      const ctxAux = canvas.getContext('2d')
-      setCtx(ctxAux)
-    }
+    // if (!ctx) {
+    //   const ctxAux = canvas.getContext('2d')
+    //   setCtx(ctxAux)
+    // }
 
-    if (config) {
-      ctx.strokeStyle = config.strokeStyle
-      ctx.lineWidth = config.lineWidth
-    }
+    // if (config) {
+    //   ctx.strokeStyle = config.strokeStyle
+    //   ctx.lineWidth = config.lineWidth
+    // }
 
     ctx.beginPath()
     // Move the the prevPosition of the mouse
@@ -255,10 +292,10 @@ const Main = ({ socket }) => {
     // Visualize the line using the strokeStyle
     ctx.stroke()
 
-    if (config) {
-      ctx.strokeStyle = drawConfig.strokeStyle
-      ctx.lineWidth = drawConfig.lineWidth
-    }
+    // if (config) {
+    //   ctx.strokeStyle = drawConfig.strokeStyle
+    //   ctx.lineWidth = drawConfig.lineWidth
+    // }
 
     prevPos = { offsetX, offsetY }
   }
@@ -430,7 +467,7 @@ const Main = ({ socket }) => {
       {haveMap && (
         <Grid
           container
-          alignItems="center"
+          alignItems='center'
           className={classes.drawToolbarContainer}
         >
           <div className={classes.shapesContainer}>
@@ -439,7 +476,7 @@ const Main = ({ socket }) => {
             <button onClick={() => setDrawingFigure(2)}>Rectangle</button>
             <button onClick={() => setDrawingFigure(3)}>Circle</button>
           </div>
-          <Divider orientation="vertical" flexItem />
+          <Divider orientation='vertical' flexItem />
           <div className={classes.shapesContainer}>
             Size
             <button onClick={() => setLineWidth(2)}>Line 1</button>
@@ -447,10 +484,10 @@ const Main = ({ socket }) => {
             <button onClick={() => setLineWidth(6)}>Line 3</button>
             <button onClick={() => setLineWidth(8)}>Line 4</button>
           </div>
-          <Divider orientation="vertical" flexItem />
+          <Divider orientation='vertical' flexItem />
           <div className={classes.colorsContainer}>
             <div className={classes.colorsOptionsContainer}>
-              <TwitterPicker triangle="hide" onChangeComplete={saveColor} />
+              <TwitterPicker triangle='hide' onChangeComplete={saveColor} />
               <div className={classes.colorsSavesContainer}>
                 <button
                   className={classes.colorsSavesButtonClass}
@@ -494,17 +531,17 @@ const Main = ({ socket }) => {
           </div>
         </Grid>
       )}
-      <div className={classes.mapContainer} id="map-container">
+      <div className={classes.mapContainer} id='map-container'>
         <img
           ref={(ref) => (image = ref)}
           hidden={!haveMap}
           src={mapFile}
-          alt="map"
+          alt='map'
           onLoad={handleImageLoaded}
-          id="mapImage"
+          id='mapImage'
         />
         <canvas
-          id="mapCanvas"
+          id='mapCanvas'
           hidden={!haveMap}
           className={classes.canvas}
           ref={(ref) => (canvas = ref)}
