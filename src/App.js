@@ -1,11 +1,10 @@
 import './App.css'
-import axios from 'axios'
 
 import socketIOCient from 'socket.io-client'
 
 import toast, { Toaster } from 'react-hot-toast'
 
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 import { useEffect } from 'react'
 import {
   BrowserRouter as Router,
@@ -20,24 +19,7 @@ import {
   SESSION_STORAGE_USER,
 } from './app/shared/constants'
 
-import {
-  BROADCAST_DRAWING,
-  RECEIVING_DRAWING,
-  SHARE_DRAW_CONFIG,
-} from './app/shared/socket-actions'
-
-import {
-  addUserData,
-  logInAction,
-  addKey,
-  connectedAction,
-  disconnectedAction,
-  updateInRoom,
-  setIsHost,
-  setHaveMap,
-} from './app/redux/slices/AppSlice'
-
-import { setHttpRequestStatus } from './app/redux/slices/AppSlice'
+import { addUserData, logInAction, addKey } from './app/redux/slices/AppSlice'
 
 // let socket
 
@@ -45,8 +27,6 @@ const socket = socketIOCient('http://localhost:4000')
 
 const App = () => {
   const dispatch = useDispatch()
-
-  const user = useSelector((res) => res.state.user)
 
   useEffect(() => {
     if (sessionStorage.getItem(SESSION_STORAGE_LOGGED)) {

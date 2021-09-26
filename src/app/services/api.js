@@ -3,6 +3,7 @@ import axios from 'axios'
 const apiUri = 'http://localhost:4000/api/'
 const deleteColaboratorUri = apiUri + 'colaborators'
 const addColaboratorUri = apiUri + 'colaborators'
+const imagesUri = apiUri + 'images'
 
 /**
  * Sends the petition to delete the colaborator of the given user
@@ -42,4 +43,10 @@ export const addColaborator = (email, colaboratorEmail) => {
  */
 export const getColaborators = (email) => {
   return axios.get(`http://localhost:4000/api/colaborators/${email}`)
+}
+
+export const saveImageApi = (data) => {
+  return axios.post(imagesUri, JSON.stringify(data), {
+    headers: { 'Content-Type': 'application/json' },
+  })
 }

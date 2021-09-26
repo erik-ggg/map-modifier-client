@@ -1,4 +1,4 @@
-import { useEffect, useState, useContext } from 'react'
+import { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useHistory } from 'react-router-dom'
 import axios from 'axios'
@@ -7,10 +7,7 @@ import './colaborators.css'
 
 import { Button, makeStyles, TextField } from '@material-ui/core'
 import AppToolbar from '../AppToolbar'
-import {
-  COLABORATORS_TOOLBAR,
-  SESSION_STORAGE_USER_ID,
-} from '../../shared/constants'
+import { COLABORATORS_TOOLBAR } from '../../shared/constants'
 import MaterialTable from 'material-table'
 
 import AddBox from '@material-ui/icons/AddBox'
@@ -28,7 +25,6 @@ import Remove from '@material-ui/icons/Remove'
 import SaveAlt from '@material-ui/icons/SaveAlt'
 import Search from '@material-ui/icons/Search'
 import ViewColumn from '@material-ui/icons/ViewColumn'
-import InputIcon from '@material-ui/icons/Input'
 
 import { forwardRef } from 'react'
 

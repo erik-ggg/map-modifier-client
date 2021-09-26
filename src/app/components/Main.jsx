@@ -4,36 +4,27 @@ import { useDispatch, useSelector } from 'react-redux'
 import { Divider, Grid, makeStyles } from '@material-ui/core'
 import { TwitterPicker } from 'react-color'
 import { useEffect, useState } from 'react'
-import axios from 'axios'
-import {
-  addKey,
-  connectedAction,
-  disconnectedAction,
-  updateInRoom,
-  setIsHost,
-  setHaveMap,
-} from '../redux/slices/AppSlice'
-import toast, { Toaster } from 'react-hot-toast'
-import {
-  LOGIN_SUCCESSFULL,
-  CONNECT_SUCCESSFULL,
-  DISCONNECT_SUCCESSFULL,
-} from '../utils/literals.js'
+import { updateInRoom, setIsHost, setHaveMap } from '../redux/slices/AppSlice'
+import toast from 'react-hot-toast'
 
 import {
   BROADCAST_DRAWING,
+  BROADCAST_IMAGE,
   END_DRAWING,
   RECEIVING_DRAWING,
+  RECEIVING_IMAGE,
   SHARE_DRAW_CONFIG,
   START_DRAWING,
 } from '../shared/socket-actions'
+import { saveImageApi } from '../services/api'
 
 let prevPos = { offsetX: 0, offsetY: 0 }
-let line = []
+// let line = []
 let color0, color1, color2, color3, color4
 let colors = []
 let canvas
 let image
+let canvasCtx
 
 const useStyles = makeStyles((theme) => ({
   mapContainer: {
@@ -97,8 +88,8 @@ const Main = ({ socket }) => {
   const inRoom = useSelector((res) => res.state.inRoom)
   const haveMap = useSelector((res) => res.state.haveMap)
   const user = useSelector((res) => res.state.user)
-  const isConnected = useSelector((res) => res.state.isConnected)
-  const isHost = useSelector((res) => res.state.isHost)
+  // const isConnected = useSelector((res) => res.state.isConnected)
+  // const isHost = useSelector((res) => res.state.isHost)
   // const mapFile = useSelector((res) => res.state.img)
 
   const [mapFile, setMapFile] = useState('')
@@ -106,7 +97,7 @@ const Main = ({ socket }) => {
   const [isPainting, setIsPainting] = useState(false)
   const [nextColor, setNextColor] = useState(0)
   const [drawingFigure, setDrawingFigure] = useState(0)
-  const [haveMapAux, setHaveMapAux] = useState(null)
+  // const [haveMapAux, setHaveMapAux] = useState(null)
   const [drawConfig, setDrawConfig] = useState({
     lineJoin: 'round',
     lineWidth: 2,
@@ -114,12 +105,20 @@ const Main = ({ socket }) => {
   })
 
   useEffect(() => {
-    socket.on(END_DRAWING, () => {
-      console.log('Ended drawing event')
+    socket.on(END_DRAWING, (id) => {
+      if (socket.id !== id) {
+        console.log('Ended drawing event')
+        setCanvasContextConfig(drawConfig)
+      }
     })
 
-    socket.on(START_DRAWING, (config) => {
-      console.log('Started drawing event')
+    socket.on(START_DRAWING, (config, room) => {
+      if (room !== socket.id) {
+        console.log(
+          `Started drawing event with config ${JSON.stringify(config)}`
+        )
+        setCanvasContextConfig(config)
+      }
     })
 
     socket.on(SHARE_DRAW_CONFIG, (config) => {
@@ -127,16 +126,25 @@ const Main = ({ socket }) => {
       setCanvasContextConfig(config)
     })
 
-    socket.on('receiving image', (res) => {
-      dispatch(setHaveMap(true))
-      console.log(res)
-      setMapFile(res.image)
-      setHaveMap(res)
+    socket.on(RECEIVING_IMAGE, (res) => {
+      console.log(
+        'Receiving image with room',
+        res.room,
+        'current id',
+        socket.id
+      )
+      if (res.room !== socket.id) {
+        dispatch(setHaveMap(true))
+        setMapFile(res.image)
+        setHaveMap(res)
+      }
     })
 
     socket.on(RECEIVING_DRAWING, (res) => {
       // console.log('Data received from server', res)
-      drawDataReceived(res.prevPos, res.currPos, res.drawConfig)
+      if (res.room !== socket.id) {
+        drawDataReceived(res.prevPos, res.currPos, res.drawConfig)
+      }
     })
 
     socket.on('user joined', () => {
@@ -145,7 +153,7 @@ const Main = ({ socket }) => {
       if (haveMap) {
         console.log('user joined, sharing map', mapFile)
         socket.emit(
-          'broadcast image',
+          BROADCAST_IMAGE,
           mapFile,
           roomKey !== null ? roomKey : socket.id
         )
@@ -165,6 +173,7 @@ const Main = ({ socket }) => {
     console.log('Context effect is being call', ctx)
     if (!ctx) {
       setCtx(canvas.getContext('2d'))
+      canvasCtx = canvas.getContext('2d')
     }
   }, [ctx])
 
@@ -203,16 +212,17 @@ const Main = ({ socket }) => {
 
     if (isPainting) {
       setIsPainting(false)
+      socket.emit(END_DRAWING, { room: roomKey !== null ? roomKey : socket.id })
     }
 
     if (drawingFigure === 1) {
       setDrawingFigure(0)
-      ctx.moveTo(prevPos.offsetX, prevPos.offsetY)
-      ctx.lineTo(offsetX, offsetY)
-      ctx.stroke()
+      canvasCtx.moveTo(prevPos.offsetX, prevPos.offsetY)
+      canvasCtx.lineTo(offsetX, offsetY)
+      canvasCtx.stroke()
     } else if (drawingFigure === 2) {
-      ctx.beginPath()
-      ctx.rect(
+      canvasCtx.beginPath()
+      canvasCtx.rect(
         prevPos.offsetX,
         prevPos.offsetY,
         offsetX - prevPos.offsetX,
@@ -225,11 +235,10 @@ const Main = ({ socket }) => {
         Math.pow(offsetX - prevPos.offsetX, 2) +
           Math.pow(offsetY - prevPos.offsetY, 2)
       )
-      ctx.beginPath()
-      ctx.arc(prevPos.offsetX, prevPos.offsetY, r, 0, 2 * Math.PI)
-      ctx.stroke()
+      canvasCtx.beginPath()
+      canvasCtx.arc(prevPos.offsetX, prevPos.offsetY, r, 0, 2 * Math.PI)
+      canvasCtx.stroke()
     }
-    socket.emit(END_DRAWING, { room: roomKey !== null ? roomKey : socket.id })
   }
 
   const emitDrawing = (prevPos, currPos, room, drawConfig) => {
@@ -273,29 +282,14 @@ const Main = ({ socket }) => {
       )
     }
 
-    // if (!ctx) {
-    //   const ctxAux = canvas.getContext('2d')
-    //   setCtx(ctxAux)
-    // }
-
-    // if (config) {
-    //   ctx.strokeStyle = config.strokeStyle
-    //   ctx.lineWidth = config.lineWidth
-    // }
-
-    ctx.beginPath()
+    canvasCtx.beginPath()
     // Move the the prevPosition of the mouse
-    ctx.moveTo(x, y)
+    canvasCtx.moveTo(x, y)
     // Draw a line to the current position of the mouse
-    ctx.lineTo(offsetX, offsetY)
-    ctx.closePath()
+    canvasCtx.lineTo(offsetX, offsetY)
+    canvasCtx.closePath()
     // Visualize the line using the strokeStyle
-    ctx.stroke()
-
-    // if (config) {
-    //   ctx.strokeStyle = drawConfig.strokeStyle
-    //   ctx.lineWidth = drawConfig.lineWidth
-    // }
+    canvasCtx.stroke()
 
     prevPos = { offsetX, offsetY }
   }
@@ -305,78 +299,6 @@ const Main = ({ socket }) => {
     dispatch(updateInRoom(false))
   }
 
-  // const connect = () => {
-  //   if (isConnected) {
-  //     // socket.emit('disconnect')
-  //     // dispatch(updateInRoom(false))
-  //   } else {
-  //     // if (socket.disconnected) {
-  //     //   socket.connect()
-  //     // }
-
-  //     if (user) {
-  //       // socket.emit('connected')
-  //       // socket.on('connected', () => {
-  //       // })
-  //       // socket.on('disconnect', () => {
-  //       //   toast.success(DISCONNECT_SUCCESSFULL)
-  //       //   dispatch(disconnectedAction())
-  //       // })
-  //       //
-  //     } else {
-  //       // socket.on('broadcast res', (res) => {
-  //       //   console.log('broadcast res', res)
-  //       // })
-  //       // socket.on('receiving image', (res) => {
-  //       //   dispatch(setHaveMap(true))
-  //       //   console.log(res)
-  //       //   setMapFile('receiving map', res.image)
-  //       //   // setHaveMap(res)
-  //       // })
-  //       // socket.on(RECEIVING_DRAWING, (res) => {
-  //       //   draw(res.prevPos, res.currPos, res.drawConfig)
-  //       // })
-  //       // socket.on('user joined', () => {
-  //       //   dispatch(setIsHost(true))
-  //       //   dispatch(updateInRoom(true))
-  //       //   console.log(haveMap)
-  //       //   console.log(haveMapAux)
-  //       //   if (haveMap) {
-  //       //     console.log('user joined, sharing map', mapFile)
-  //       //     socket.emit(
-  //       //       'broadcast image',
-  //       //       mapFile,
-  //       //       roomKey !== null ? roomKey : socket.id
-  //       //     )
-  //       //   }
-  //       //   socket.emit(
-  //       //     SHARE_DRAW_CONFIG,
-  //       //     drawConfig,
-  //       //     roomKey !== null ? roomKey : socket.id
-  //       //   )
-  //       //   toast('User joined!', {
-  //       //     icon: '🙋‍♀️',
-  //       //   })
-  //       // })
-  //       // socket.on('joined', (targetId) => {
-  //       //   dispatch(addKey(targetId))
-  //       //   toast.success('Joined!')
-  //       // })
-  //       // socket.on('already joined', () => {
-  //       //   toast('Already joined!', {
-  //       //     icon: '⚠️',
-  //       //   })
-  //       // })
-  //       // socket.on(SHARE_DRAW_CONFIG, (config) => {
-  //       //   setDrawConfig(config)
-  //       //   setCanvasContextConfig(config)
-  //       // })
-  //       //@todo: throw error
-  //       // }
-  //     }
-  //   }
-  // }
-
   /**
    * Saves the color selected by the user in the color picker storing it inside the button css.
    * Also, changes the canvas context color
@@ -384,7 +306,7 @@ const Main = ({ socket }) => {
    */
   const saveColor = (color) => {
     drawConfig.strokeStyle = color.hex
-    ctx.strokeStyle = color.hex
+    canvasCtx.strokeStyle = color.hex
 
     colors[nextColor] = color.hex
     switch (nextColor) {
@@ -415,17 +337,17 @@ const Main = ({ socket }) => {
    * @param {*} config the config that will be used to draw
    */
   const setCanvasContextConfig = (config) => {
-    ctx.strokeStyle = config.strokeStyle
-    ctx.lineJoin = config.lineJoin
-    ctx.lineWidth = config.lineWidth
+    canvasCtx.strokeStyle = config.strokeStyle
+    canvasCtx.lineJoin = config.lineJoin
+    canvasCtx.lineWidth = config.lineWidth
   }
 
   const restoreSavedColor = (button) => {
-    ctx.strokeStyle = button.style.backgroundColor
+    canvasCtx.strokeStyle = button.style.backgroundColor
   }
 
   const setLineWidth = (width) => {
-    ctx.lineWidth = width
+    canvasCtx.lineWidth = width
     drawConfig.lineWidth = width
   }
 
@@ -450,6 +372,21 @@ const Main = ({ socket }) => {
     link.click()
   }
 
+  const saveImage = () => {
+    const data = {
+      userId: user.id,
+      imageData: 'test',
+      canvasData: canvas.toDataURL(),
+    }
+    saveImageApi(data)
+      .then(() => {
+        toast.success('Saved!')
+      })
+      .catch((err) => {
+        toast.error('Error!')
+      })
+  }
+
   const setImage = (image) => {
     setMapFile(image)
   }
@@ -461,13 +398,14 @@ const Main = ({ socket }) => {
         type={EDITOR_TOOLBAR}
         disconnect={disconnect}
         download={download}
+        saveImage={saveImage}
         socket={socket}
         setImage={setImage}
       />
       {haveMap && (
         <Grid
           container
-          alignItems='center'
+          alignItems="center"
           className={classes.drawToolbarContainer}
         >
           <div className={classes.shapesContainer}>
@@ -476,7 +414,7 @@ const Main = ({ socket }) => {
             <button onClick={() => setDrawingFigure(2)}>Rectangle</button>
             <button onClick={() => setDrawingFigure(3)}>Circle</button>
           </div>
-          <Divider orientation='vertical' flexItem />
+          <Divider orientation="vertical" flexItem />
           <div className={classes.shapesContainer}>
             Size
             <button onClick={() => setLineWidth(2)}>Line 1</button>
@@ -484,10 +422,10 @@ const Main = ({ socket }) => {
             <button onClick={() => setLineWidth(6)}>Line 3</button>
             <button onClick={() => setLineWidth(8)}>Line 4</button>
           </div>
-          <Divider orientation='vertical' flexItem />
+          <Divider orientation="vertical" flexItem />
           <div className={classes.colorsContainer}>
             <div className={classes.colorsOptionsContainer}>
-              <TwitterPicker triangle='hide' onChangeComplete={saveColor} />
+              <TwitterPicker triangle="hide" onChangeComplete={saveColor} />
               <div className={classes.colorsSavesContainer}>
                 <button
                   className={classes.colorsSavesButtonClass}
@@ -531,17 +469,17 @@ const Main = ({ socket }) => {
           </div>
         </Grid>
       )}
-      <div className={classes.mapContainer} id='map-container'>
+      <div className={classes.mapContainer} id="map-container">
         <img
           ref={(ref) => (image = ref)}
           hidden={!haveMap}
           src={mapFile}
-          alt='map'
+          alt="map"
           onLoad={handleImageLoaded}
-          id='mapImage'
+          id="mapImage"
         />
         <canvas
-          id='mapCanvas'
+          id="mapCanvas"
           hidden={!haveMap}
           className={classes.canvas}
           ref={(ref) => (canvas = ref)}

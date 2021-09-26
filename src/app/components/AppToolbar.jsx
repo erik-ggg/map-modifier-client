@@ -10,11 +10,10 @@ import {
   Toolbar,
   Typography,
 } from '@material-ui/core'
-import RefreshIcon from '@material-ui/icons/Refresh'
+import SaveIcon from '@mui/icons-material/Save'
 import MenuIcon from '@material-ui/icons/Menu'
 import axios from 'axios'
 
-import Fab from '@material-ui/core/Fab'
 import toast from 'react-hot-toast'
 
 import { GoogleLogin } from 'react-google-login'
@@ -39,13 +38,13 @@ import { Link } from 'react-router-dom'
 import {
   COLABORATORS_TOOLBAR,
   EDITOR_TOOLBAR,
-  SESSION_STORAGE_USER_KEY,
-  SESSION_STORAGE_USER_ID,
   CONNECT_BUTTON_CONNECT,
   CONNECT_BUTTON_DISCONNECT,
   SESSION_STORAGE_USER,
   SESSION_STORAGE_LOGGED,
 } from '../shared/constants'
+import { BROADCAST_IMAGE } from '../shared/socket-actions'
+import Save from '@mui/icons-material/Save'
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -75,6 +74,7 @@ const AppToolbar = ({
   onOpenPopup,
   download,
   refresh,
+  saveImage,
   socket,
   setImage,
 }) => {
@@ -135,7 +135,7 @@ const AppToolbar = ({
 
   const emitImage = (image) => {
     if (image && isConnected) {
-      socket.emit('broadcast image', {
+      socket.emit(BROADCAST_IMAGE, {
         image: image,
         room: roomKey !== null ? roomKey : socket.id,
       })
@@ -173,6 +173,10 @@ const AppToolbar = ({
 
   const handleMenuClick = (event) => {
     setAnchorEl(event.currentTarget)
+  }
+
+  const handleSaveButton = () => {
+    saveImage()
   }
 
   const handleMenuClose = () => {
@@ -232,9 +236,13 @@ const AppToolbar = ({
                     hidden
                   />
                 </Button>
-                <Button onClick={hadleDownloadButton} color="inherit">
-                  Download
-                </Button>
+
+                {haveMap && (
+                  <Button onClick={handleSaveButton} color="inherit">
+                    <SaveIcon color="inherit">Download</SaveIcon>
+                  </Button>
+                )}
+
                 {isConnected && (
                   <Button onClick={showKey} color="inherit">
                     Show Key
