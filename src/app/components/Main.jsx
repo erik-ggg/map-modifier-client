@@ -1,7 +1,17 @@
 import AppToolbar from './AppToolbar'
+import PopupSaveImage from './popup-save-image/PopupSaveImage'
+
+import './Main.css'
 import { EDITOR_TOOLBAR } from '../shared/constants'
 import { useDispatch, useSelector } from 'react-redux'
-import { Divider, Grid, makeStyles } from '@material-ui/core'
+import {
+  Button,
+  Divider,
+  Grid,
+  makeStyles,
+  Modal,
+  TextField,
+} from '@material-ui/core'
 import { TwitterPicker } from 'react-color'
 import { useEffect, useState } from 'react'
 import { updateInRoom, setIsHost, setHaveMap } from '../redux/slices/AppSlice'
@@ -97,12 +107,15 @@ const Main = ({ socket }) => {
   const [isPainting, setIsPainting] = useState(false)
   const [nextColor, setNextColor] = useState(0)
   const [drawingFigure, setDrawingFigure] = useState(0)
+  const [imageTitle, setImageTitle] = useState('')
+  const [isOpen, setIsOpen] = useState(false)
   // const [haveMapAux, setHaveMapAux] = useState(null)
   const [drawConfig, setDrawConfig] = useState({
     lineJoin: 'round',
     lineWidth: 2,
     strokeStyle: 'black',
   })
+  const [isSaveImageDialogOpen, setIsSaveImageDialogOpen] = useState(false)
 
   useEffect(() => {
     socket.on(END_DRAWING, (id) => {
@@ -351,6 +364,10 @@ const Main = ({ socket }) => {
     drawConfig.lineWidth = width
   }
 
+  const toggleModal = () => {
+    setIsOpen(!isOpen)
+  }
+
   /**
    * Handle download button. Combine both canvas and image to get the final image.
    */
@@ -372,9 +389,10 @@ const Main = ({ socket }) => {
     link.click()
   }
 
-  const saveImage = () => {
+  const saveImage = (name) => {
     const data = {
       userId: user.id,
+      imageName: name,
       imageData: 'test',
       canvasData: canvas.toDataURL(),
     }
@@ -391,6 +409,14 @@ const Main = ({ socket }) => {
     setMapFile(image)
   }
 
+  const closeSaveImagePopup = () => {
+    setIsSaveImageDialogOpen(false)
+  }
+
+  const openSaveImagePopup = () => {
+    setIsSaveImageDialogOpen(true)
+  }
+
   return (
     <div>
       {/* <Toaster position='top-center' reverseOrder={false} /> */}
@@ -398,6 +424,7 @@ const Main = ({ socket }) => {
         type={EDITOR_TOOLBAR}
         disconnect={disconnect}
         download={download}
+        openSaveImagePopup={openSaveImagePopup}
         saveImage={saveImage}
         socket={socket}
         setImage={setImage}
@@ -489,6 +516,12 @@ const Main = ({ socket }) => {
           onMouseMove={onMouseMove}
         ></canvas>
       </div>
+      <PopupSaveImage
+        open={isSaveImageDialogOpen}
+        close={closeSaveImagePopup}
+        saveImage={saveImage}
+      />
+      {/* {isSaveImageDialogOpen && <PopupSaveImage saveImage={saveImage} />} */}
     </div>
   )
 }

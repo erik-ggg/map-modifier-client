@@ -73,7 +73,7 @@ const AppToolbar = ({
   type,
   onOpenPopup,
   download,
-  refresh,
+  openSaveImagePopup,
   saveImage,
   socket,
   setImage,
@@ -168,6 +168,7 @@ const AppToolbar = ({
   }
 
   const handleLoadMap = () => {
+    // openSaveImagePopup()
     setAnchorEl(null)
   }
 
@@ -176,7 +177,7 @@ const AppToolbar = ({
   }
 
   const handleSaveButton = () => {
-    saveImage()
+    openSaveImagePopup()
   }
 
   const handleMenuClose = () => {
@@ -239,7 +240,7 @@ const AppToolbar = ({
 
                 {haveMap && (
                   <Button onClick={handleSaveButton} color="inherit">
-                    <SaveIcon color="inherit">Download</SaveIcon>
+                    <SaveIcon color="inherit"></SaveIcon>
                   </Button>
                 )}
 
