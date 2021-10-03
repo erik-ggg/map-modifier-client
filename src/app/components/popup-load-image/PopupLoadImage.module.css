@@ -1,0 +1,24 @@
+.loadImageModal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+
+  border: 1px solid #ccc;
+  background: #fff;
+  overflow: auto;
+  border-radius: 4px;
+  outline: none;
+  padding: 20px;
+  width: 20rem;
+}
+.buttonsContainer {
+  display: flex;
+  justify-content: space-evenly;
+}
+.emailform {
+  margin-bottom: 1rem;
+}
+.addColaboratorTitle {
+  text-align: center;
+}

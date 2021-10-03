@@ -74,7 +74,7 @@ const AppToolbar = ({
   onOpenPopup,
   download,
   openSaveImagePopup,
-  saveImage,
+  displayLoadImagePopup,
   socket,
   setImage,
 }) => {
@@ -168,7 +168,7 @@ const AppToolbar = ({
   }
 
   const handleLoadMap = () => {
-    // openSaveImagePopup()
+    displayLoadImagePopup()
     setAnchorEl(null)
   }
 

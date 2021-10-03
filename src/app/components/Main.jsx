@@ -26,7 +26,8 @@ import {
   SHARE_DRAW_CONFIG,
   START_DRAWING,
 } from '../shared/socket-actions'
-import { saveImageApi } from '../services/api'
+import { getUserImagesFromDB, saveImageApi } from '../services/api'
+import PopupLoadImage from './popup-load-image/PopupLoadImage'
 
 let prevPos = { offsetX: 0, offsetY: 0 }
 // let line = []
@@ -116,6 +117,8 @@ const Main = ({ socket }) => {
     strokeStyle: 'black',
   })
   const [isSaveImageDialogOpen, setIsSaveImageDialogOpen] = useState(false)
+  const [isLoadImageDialogOpen, setIsLoadImageDialogOpen] = useState(false)
+  const [userSavedImages, setUserSavedImages] = useState([])
 
   useEffect(() => {
     socket.on(END_DRAWING, (id) => {
@@ -364,10 +367,6 @@ const Main = ({ socket }) => {
     drawConfig.lineWidth = width
   }
 
-  const toggleModal = () => {
-    setIsOpen(!isOpen)
-  }
-
   /**
    * Handle download button. Combine both canvas and image to get the final image.
    */
@@ -409,12 +408,34 @@ const Main = ({ socket }) => {
     setMapFile(image)
   }
 
-  const closeSaveImagePopup = () => {
+  const closePopup = () => {
     setIsSaveImageDialogOpen(false)
+    setIsLoadImageDialogOpen(false)
   }
 
   const openSaveImagePopup = () => {
     setIsSaveImageDialogOpen(true)
+  }
+
+  const displayLoadImagePopup = () => {
+    getUserImagesFromDB(user.id)
+      .then((res) => {
+        setUserSavedImages(res.data)
+        setIsLoadImageDialogOpen(true)
+      })
+      .catch((err) => {
+        console.log(err)
+      })
+  }
+
+  const loadSelectedMap = (data) => {
+    setHaveMap(true)
+    canvasCtx.clearRect(0, 0, canvas.width, canvas.height)
+    const imgAux = new Image()
+    imgAux.onload = () => {
+      canvasCtx.drawImage(imgAux, 0, 0)
+    }
+    imgAux.src = data
   }
 
   return (
@@ -425,6 +446,7 @@ const Main = ({ socket }) => {
         disconnect={disconnect}
         download={download}
         openSaveImagePopup={openSaveImagePopup}
+        displayLoadImagePopup={displayLoadImagePopup}
         saveImage={saveImage}
         socket={socket}
         setImage={setImage}
@@ -518,10 +540,15 @@ const Main = ({ socket }) => {
       </div>
       <PopupSaveImage
         open={isSaveImageDialogOpen}
-        close={closeSaveImagePopup}
+        close={closePopup}
         saveImage={saveImage}
       />
-      {/* {isSaveImageDialogOpen && <PopupSaveImage saveImage={saveImage} />} */}
+      <PopupLoadImage
+        open={isLoadImageDialogOpen}
+        close={closePopup}
+        loadSelectedMap={loadSelectedMap}
+        images={userSavedImages}
+      />
     </div>
   )
 }

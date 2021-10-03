@@ -50,3 +50,7 @@ export const saveImageApi = (data) => {
     headers: { 'Content-Type': 'application/json' },
   })
 }
+
+export const getUserImagesFromDB = (userId) => {
+  return axios.get(`${imagesUri}/${userId}`)
+}
