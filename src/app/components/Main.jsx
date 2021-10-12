@@ -389,11 +389,19 @@ const Main = ({ socket }) => {
   }
 
   const saveImage = (name) => {
+    const canvasAux = document.createElement('canvas')
+    canvasAux.width = canvas.width
+    canvasAux.height = canvas.height
+    const ctxAux = canvasAux.getContext('2d')
+    ctxAux.drawImage(image, 0, 0)
+    const b64 = canvasAux.toDataURL()
+
     const data = {
       userId: user.id,
       imageName: name,
       imageData: 'test',
       canvasData: canvas.toDataURL(),
+      imageBlob: b64,
     }
     saveImageApi(data)
       .then(() => {
@@ -429,13 +437,19 @@ const Main = ({ socket }) => {
   }
 
   const loadSelectedMap = (data) => {
-    setHaveMap(true)
-    canvasCtx.clearRect(0, 0, canvas.width, canvas.height)
-    const imgAux = new Image()
-    imgAux.onload = () => {
-      canvasCtx.drawImage(imgAux, 0, 0)
+    setMapFile(data.image_blob)
+
+    image.onload = () => {
+      canvasCtx.clearRect(0, 0, canvas.width, canvas.height)
+      const imgAux = new Image()
+      imgAux.onload = () => {
+        canvasCtx.drawImage(imgAux, 0, 0)
+      }
+      imgAux.src = data.canvas_data
     }
-    imgAux.src = data
+
+    setHaveMap(true)
+    dispatch(setHaveMap(true))
   }
 
   return (

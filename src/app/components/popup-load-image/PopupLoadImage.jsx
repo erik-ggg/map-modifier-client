@@ -15,7 +15,7 @@ const PopupLoadImage = ({ open, close, loadSelectedMap, images }) => {
   }
 
   const handleClick = (image) => {
-    loadSelectedMap(image.canvas_data)
+    loadSelectedMap(image)
     close()
   }
 
