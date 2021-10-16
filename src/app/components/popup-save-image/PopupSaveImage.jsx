@@ -4,7 +4,6 @@ import styles from './PopupSaveImage.module.css'
 
 const PopupSaveImage = ({ open, close, saveImage }) => {
   const [imageTitle, setImageTitle] = useState('')
-  const addImageHandler = () => {}
 
   const toggleModal = () => {
     close()

@@ -44,7 +44,6 @@ import {
   SESSION_STORAGE_LOGGED,
 } from '../shared/constants'
 import { BROADCAST_IMAGE } from '../shared/socket-actions'
-import Save from '@mui/icons-material/Save'
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -73,6 +72,7 @@ const AppToolbar = ({
   type,
   onOpenPopup,
   download,
+  loadImageState,
   openSaveImagePopup,
   displayLoadImagePopup,
   socket,
@@ -87,7 +87,7 @@ const AppToolbar = ({
   const user = useSelector((res) => res.state.user)
 
   const [anchorEl, setAnchorEl] = useState(null)
-  const [mapFile, setMapFile] = useState('')
+  const [, setMapFile] = useState('')
   const [targetConnectionId, setTargetConnectionId] = useState('')
   const [haveMap, setHaveMapState] = useState(false)
 
@@ -145,9 +145,9 @@ const AppToolbar = ({
   /**
    * Handle download button. Combine both canvas and image to get the final image.
    */
-  const hadleDownloadButton = () => {
-    download()
-  }
+  // const hadleDownloadButton = () => {
+  //   download()
+  // }
 
   /**
    * Handle the load map from file action. If connected to room it will share it.
@@ -157,6 +157,7 @@ const AppToolbar = ({
     const img = event.target.files[0]
     setImage(URL.createObjectURL(img))
     setMapFile(URL.createObjectURL(img))
+    loadImageState()
     setHaveMapState(true)
     dispatch(setHaveMap(true))
 

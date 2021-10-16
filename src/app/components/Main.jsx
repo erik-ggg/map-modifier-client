@@ -4,14 +4,7 @@ import PopupSaveImage from './popup-save-image/PopupSaveImage'
 import './Main.css'
 import { EDITOR_TOOLBAR } from '../shared/constants'
 import { useDispatch, useSelector } from 'react-redux'
-import {
-  Button,
-  Divider,
-  Grid,
-  makeStyles,
-  Modal,
-  TextField,
-} from '@material-ui/core'
+import { Divider, Grid, makeStyles } from '@material-ui/core'
 import { TwitterPicker } from 'react-color'
 import { useEffect, useState } from 'react'
 import { updateInRoom, setIsHost, setHaveMap } from '../redux/slices/AppSlice'
@@ -23,6 +16,7 @@ import {
   END_DRAWING,
   RECEIVING_DRAWING,
   RECEIVING_IMAGE,
+  SEND_IMAGE_AND_CANVAS_TO_CLIENT,
   SHARE_DRAW_CONFIG,
   START_DRAWING,
 } from '../shared/socket-actions'
@@ -102,14 +96,12 @@ const Main = ({ socket }) => {
   // const isConnected = useSelector((res) => res.state.isConnected)
   // const isHost = useSelector((res) => res.state.isHost)
   // const mapFile = useSelector((res) => res.state.img)
-
-  const [mapFile, setMapFile] = useState('')
+  const [imageLoaded, setImageLoaded] = useState(false)
+  const [mapFile, setMapFile] = useState(null)
   const [ctx, setCtx] = useState(null)
   const [isPainting, setIsPainting] = useState(false)
   const [nextColor, setNextColor] = useState(0)
   const [drawingFigure, setDrawingFigure] = useState(0)
-  const [imageTitle, setImageTitle] = useState('')
-  const [isOpen, setIsOpen] = useState(false)
   // const [haveMapAux, setHaveMapAux] = useState(null)
   const [drawConfig, setDrawConfig] = useState({
     lineJoin: 'round',
@@ -121,18 +113,18 @@ const Main = ({ socket }) => {
   const [userSavedImages, setUserSavedImages] = useState([])
 
   useEffect(() => {
+    console.log(haveMap)
+  }, [haveMap])
+
+  useEffect(() => {
     socket.on(END_DRAWING, (id) => {
       if (socket.id !== id) {
-        console.log('Ended drawing event')
         setCanvasContextConfig(drawConfig)
       }
     })
 
     socket.on(START_DRAWING, (config, room) => {
       if (room !== socket.id) {
-        console.log(
-          `Started drawing event with config ${JSON.stringify(config)}`
-        )
         setCanvasContextConfig(config)
       }
     })
@@ -143,12 +135,6 @@ const Main = ({ socket }) => {
     })
 
     socket.on(RECEIVING_IMAGE, (res) => {
-      console.log(
-        'Receiving image with room',
-        res.room,
-        'current id',
-        socket.id
-      )
       if (res.room !== socket.id) {
         dispatch(setHaveMap(true))
         setMapFile(res.image)
@@ -157,36 +143,48 @@ const Main = ({ socket }) => {
     })
 
     socket.on(RECEIVING_DRAWING, (res) => {
-      // console.log('Data received from server', res)
       if (res.room !== socket.id) {
         drawDataReceived(res.prevPos, res.currPos, res.drawConfig)
       }
     })
 
-    socket.on('user joined', () => {
+    socket.on(SEND_IMAGE_AND_CANVAS_TO_CLIENT, (res) => {
+      console.log('Receiving image and canvas', res)
+
+      setMapFile(res.image)
+
+      image.onload = () => {
+        canvasCtx.clearRect(0, 0, canvas.width, canvas.height)
+        const imgAux = new Image()
+        imgAux.onload = () => {
+          canvasCtx.drawImage(imgAux, 0, 0)
+        }
+        imgAux.src = res.canvas
+      }
+
+      setHaveMap(true)
+      dispatch(setHaveMap(true))
+    })
+
+    socket.on('user joined', (clientId) => {
       dispatch(setIsHost(true))
       dispatch(updateInRoom(true))
-      if (haveMap) {
-        console.log('user joined, sharing map', mapFile)
-        socket.emit(
-          BROADCAST_IMAGE,
-          mapFile,
-          roomKey !== null ? roomKey : socket.id
-        )
+      if (image.src.length > 0) {
+        const data = {
+          // image: base64Image(),
+          canvas: canvas.toDataURL(),
+          clientId: clientId,
+        }
+        socket.emit(SEND_IMAGE_AND_CANVAS_TO_CLIENT, data)
       }
-      socket.emit(
-        SHARE_DRAW_CONFIG,
-        drawConfig,
-        roomKey !== null ? roomKey : socket.id
-      )
       toast('User joined!', {
         icon: '🙋‍♀️',
       })
     })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   useEffect(() => {
-    console.log('Context effect is being call', ctx)
     if (!ctx) {
       setCtx(canvas.getContext('2d'))
       canvasCtx = canvas.getContext('2d')
@@ -388,20 +386,22 @@ const Main = ({ socket }) => {
     link.click()
   }
 
-  const saveImage = (name) => {
+  const base64Image = () => {
     const canvasAux = document.createElement('canvas')
     canvasAux.width = canvas.width
     canvasAux.height = canvas.height
     const ctxAux = canvasAux.getContext('2d')
     ctxAux.drawImage(image, 0, 0)
-    const b64 = canvasAux.toDataURL()
+    return canvasAux.toDataURL()
+  }
 
+  const saveImage = (name) => {
     const data = {
       userId: user.id,
       imageName: name,
       imageData: 'test',
       canvasData: canvas.toDataURL(),
-      imageBlob: b64,
+      imageBlob: base64Image(),
     }
     saveImageApi(data)
       .then(() => {
@@ -452,6 +452,10 @@ const Main = ({ socket }) => {
     dispatch(setHaveMap(true))
   }
 
+  const loadImageState = () => {
+    setImageLoaded(true)
+  }
+
   return (
     <div>
       {/* <Toaster position='top-center' reverseOrder={false} /> */}
@@ -459,6 +463,7 @@ const Main = ({ socket }) => {
         type={EDITOR_TOOLBAR}
         disconnect={disconnect}
         download={download}
+        loadImageState={loadImageState}
         openSaveImagePopup={openSaveImagePopup}
         displayLoadImagePopup={displayLoadImagePopup}
         saveImage={saveImage}

@@ -1,13 +1,13 @@
-const { createSlice } = require("@reduxjs/toolkit")
+const { createSlice } = require('@reduxjs/toolkit')
 
 let initialState = {
-  buttonConnectText: "Connect",
+  buttonConnectText: 'Connect',
   img: null,
   isHost: false,
   isConnected: false,
   isLogged: false,
   inRoom: false,
-  haveMap: null,
+  haveMap: false,
   httpRequestStatus: null,
   user: null,
   roomKey: null,
@@ -15,7 +15,7 @@ let initialState = {
 }
 
 const appSlice = createSlice({
-  name: "state",
+  name: 'state',
   initialState,
   reducers: {
     addKey: (state, action) => {
@@ -41,11 +41,11 @@ const appSlice = createSlice({
     },
     connectedAction: (state, action) => {
       state.isConnected = true
-      state.buttonConnectText = "Disconnect"
+      state.buttonConnectText = 'Disconnect'
     },
     disconnectedAction: (state) => {
       state.isConnected = false
-      state.buttonConnectText = "Connect"
+      state.buttonConnectText = 'Connect'
     },
     logInAction: (state) => {
       state.isLogged = true

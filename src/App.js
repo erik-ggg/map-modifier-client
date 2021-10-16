@@ -49,20 +49,8 @@ const App = () => {
         icon: '⚠️',
       })
     })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
-
-  useEffect(() => {
-    // axios.interceptors.request.use((req, res) => {
-    //   if (req.url.includes("colaborators")) {
-    //     console.log(req, res)
-    //   }
-    // })
-    // axios.interceptors.response.use(undefined, (err) => {
-    //   if (err.response.status === 404) {
-    //     dispatch(setHttpRequestStatus(404))
-    //   }
-    // })
-  })
 
   return (
     <div>

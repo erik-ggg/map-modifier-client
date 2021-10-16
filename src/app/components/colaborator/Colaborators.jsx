@@ -8,7 +8,7 @@ import './colaborators.css'
 import { Button, makeStyles, TextField } from '@material-ui/core'
 import AppToolbar from '../AppToolbar'
 import { COLABORATORS_TOOLBAR } from '../../shared/constants'
-import MaterialTable from 'material-table'
+import MaterialTable from '@material-table/core'
 
 import AddBox from '@material-ui/icons/AddBox'
 import ArrowDownward from '@material-ui/icons/ArrowDownward'

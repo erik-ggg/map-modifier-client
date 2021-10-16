@@ -1,13 +1,10 @@
-import React, { useState, useEffect } from 'react'
-import { Button, Modal, TextField } from '@material-ui/core'
+import React from 'react'
+import { Button, Modal } from '@material-ui/core'
 import styles from './PopupLoadImage.module.css'
 import List from '@mui/material/List'
 import ListItem from '@mui/material/ListItem'
 import ListItemButton from '@mui/material/ListItemButton'
 import ListItemText from '@mui/material/ListItemText'
-import { bgcolor } from '@mui/system'
-
-const data = []
 
 const PopupLoadImage = ({ open, close, loadSelectedMap, images }) => {
   const toggleModal = () => {
