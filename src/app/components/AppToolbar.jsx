@@ -141,14 +141,6 @@ const AppToolbar = ({
       })
     }
   }
-
-  /**
-   * Handle download button. Combine both canvas and image to get the final image.
-   */
-  // const hadleDownloadButton = () => {
-  //   download()
-  // }
-
   /**
    * Handle the load map from file action. If connected to room it will share it.
    * @param {*} event the input event
@@ -168,8 +160,16 @@ const AppToolbar = ({
     reader.readAsDataURL(event.target.files[0])
   }
 
+  /**
+   * Handle download button. Combine both canvas and image to get the final image.
+   */
+  const handleDownloadButton = () => {
+    download()
+  }
+
   const handleLoadMap = () => {
     displayLoadImagePopup()
+    setHaveMapState(true) // TODO: pasar a estado redux
     setAnchorEl(null)
   }
 
@@ -242,6 +242,12 @@ const AppToolbar = ({
                 {haveMap && (
                   <Button onClick={handleSaveButton} color="inherit">
                     <SaveIcon color="inherit"></SaveIcon>
+                  </Button>
+                )}
+
+                {haveMap && (
+                  <Button onClick={handleDownloadButton} color="inherit">
+                    {/* <SaveIcon color="inherit"></SaveIcon> */}Download
                   </Button>
                 )}
 

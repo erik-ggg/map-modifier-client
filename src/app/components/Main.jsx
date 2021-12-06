@@ -4,7 +4,7 @@ import PopupSaveImage from './popup-save-image/PopupSaveImage'
 import './Main.css'
 import { EDITOR_TOOLBAR } from '../shared/constants'
 import { useDispatch, useSelector } from 'react-redux'
-import { Divider, Grid, makeStyles } from '@material-ui/core'
+import { Button, Divider, Grid, makeStyles } from '@material-ui/core'
 import { TwitterPicker } from 'react-color'
 import { useEffect, useState } from 'react'
 import { updateInRoom, setIsHost, setHaveMap } from '../redux/slices/AppSlice'
@@ -102,6 +102,7 @@ const Main = ({ socket }) => {
   const [isPainting, setIsPainting] = useState(false)
   const [nextColor, setNextColor] = useState(0)
   const [drawingFigure, setDrawingFigure] = useState(0)
+  const [isErasing, setIsErasing] = useState(false)
   // const [haveMapAux, setHaveMapAux] = useState(null)
   const [drawConfig, setDrawConfig] = useState({
     lineJoin: 'round',
@@ -210,13 +211,6 @@ const Main = ({ socket }) => {
     if (isPainting && drawingFigure === 0) {
       const { offsetX, offsetY } = nativeEvent
       const offSetData = { offsetX, offsetY }
-      // Set the start and stop position of the paint event.
-      // const positionData = {
-      //   start: { ...prevPos },
-      //   stop: { ...offSetData },
-      // }
-      // Add the position to the line array
-      // line = line.concat(positionData)
       draw(prevPos, offSetData)
     }
   }
@@ -456,6 +450,17 @@ const Main = ({ socket }) => {
     setImageLoaded(true)
   }
 
+  const penButtonHandler = () => {
+    setIsErasing(true)
+    canvasCtx.globalCompositeOperation = 'source-over'
+    canvasCtx.strokeStyle = drawConfig.strokeStyle
+  }
+
+  const eraserButtonHandler = () => {
+    setIsErasing(false)
+    canvasCtx.globalCompositeOperation = 'destination-out'
+  }
+
   return (
     <div>
       {/* <Toaster position='top-center' reverseOrder={false} /> */}
@@ -530,6 +535,16 @@ const Main = ({ socket }) => {
                   }}
                   ref={(ref) => (color4 = ref)}
                 ></button>
+              </div>
+              <div>
+                <Button onClick={penButtonHandler} color="primary">
+                  Pen
+                </Button>
+              </div>
+              <div>
+                <Button onClick={eraserButtonHandler} color="primary">
+                  Eraser
+                </Button>
               </div>
               {/* <div className={classes.colorsTitleClass}>Color</div> */}
             </div>
