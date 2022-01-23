@@ -1,4 +1,5 @@
-import '../../App.css'
+import './AppToolbar.css'
+
 import {
   AppBar,
   Button,
@@ -26,13 +27,22 @@ import {
   updateInRoom,
   addUserData,
   logInAction,
-} from '../redux/slices/AppSlice'
+} from '../../redux/slices/AppSlice'
 import { useState } from 'react'
 
 import {
+  APPTOOLBAR_ADD_COLABORATOR,
+  APPTOOLBAR_COLABORATORS,
+  APPTOOLBAR_DOWNLOAD,
+  APPTOOLBAR_EDITOR,
+  APPTOOLBAR_JOIN,
+  APPTOOLBAR_LOAD_MAP,
+  APPTOOLBAR_LOGIN,
+  APPTOOLBAR_SHOW_KEY,
+  APPTOOLBAR_UPLOAD_FILE,
   CONNECT_SUCCESSFULL,
   DISCONNECT_SUCCESSFULL,
-} from '../utils/literals.js'
+} from '../../utils/literals.js'
 
 import { Link } from 'react-router-dom'
 import {
@@ -42,10 +52,15 @@ import {
   CONNECT_BUTTON_DISCONNECT,
   SESSION_STORAGE_USER,
   SESSION_STORAGE_LOGGED,
-} from '../shared/constants'
-import { BROADCAST_IMAGE } from '../shared/socket-actions'
+} from '../../shared/constants'
+import { BROADCAST_IMAGE } from '../../shared/socket-actions'
 
 const useStyles = makeStyles((theme) => ({
+  header: {
+    backgroundColor: '#051622',
+    borderColor: '#1BA098',
+    color: '#1BA098',
+  },
   root: {
     flexGrow: 1,
   },
@@ -190,7 +205,7 @@ const AppToolbar = ({
   }
 
   return (
-    <AppBar position="static">
+    <AppBar className={classes.header} position="static">
       <Toolbar>
         <IconButton
           edge="start"
@@ -210,15 +225,15 @@ const AppToolbar = ({
           open={Boolean(anchorEl)}
           onClose={handleMenuClose}
         >
-          <MenuItem onClick={handleLoadMap}>Load map</MenuItem>
+          <MenuItem onClick={handleLoadMap}>{APPTOOLBAR_LOAD_MAP}</MenuItem>
           {type === EDITOR_TOOLBAR && userId !== null && (
             <MenuItem>
-              <Link to="/colaborators">Colaborators</Link>
+              <Link to="/colaborators">{APPTOOLBAR_COLABORATORS}</Link>
             </MenuItem>
           )}
           {type === COLABORATORS_TOOLBAR && (
             <MenuItem>
-              <Link to="/editor">Editor</Link>
+              <Link to="/editor">{APPTOOLBAR_EDITOR}</Link>
             </MenuItem>
           )}
         </Menu>
@@ -229,8 +244,8 @@ const AppToolbar = ({
           <div className={classes.connectOptionsContainer}>
             {isLogged && (
               <div className={classes.connectOptionsContainerAux}>
-                <Button variant="contained" component="label">
-                  Upload File
+                <Button variant="text" color="inherit">
+                  {APPTOOLBAR_UPLOAD_FILE}
                   <input
                     type="file"
                     onChange={handleInputFile}
@@ -246,27 +261,29 @@ const AppToolbar = ({
                 )}
 
                 {haveMap && (
-                  <Button onClick={handleDownloadButton} color="inherit">
-                    {/* <SaveIcon color="inherit"></SaveIcon> */}Download
+                  <Button onClick={handleDownloadButton} variant="text">
+                    {/* <SaveIcon color="inherit"></SaveIcon> */}
+                    {APPTOOLBAR_DOWNLOAD}
                   </Button>
                 )}
 
                 {isConnected && (
                   <Button onClick={showKey} color="inherit">
-                    Show Key
+                    {APPTOOLBAR_SHOW_KEY}
                   </Button>
                 )}
                 {isConnected && (
                   <TextField
+                    className="header"
                     id="connection-id"
                     onChange={(e) => setTargetConnectionId(e.target.value)}
-                    label="Outlined"
+                    label="Paste the key here!"
                     variant="outlined"
                   />
                 )}
                 {isConnected && (
                   <Button onClick={join} color="inherit">
-                    Join
+                    {APPTOOLBAR_JOIN}
                   </Button>
                 )}
                 <Button onClick={handleConnectButton} color="inherit">
@@ -279,7 +296,7 @@ const AppToolbar = ({
             {!isLogged && (
               <GoogleLogin
                 clientId={clientId}
-                buttonText="Login"
+                buttonText={APPTOOLBAR_LOGIN}
                 onSuccess={handleLoginSuccess}
                 onFailure={handleLoginFailure}
                 cookiePolicy={'single_host_origin'}
@@ -291,7 +308,7 @@ const AppToolbar = ({
         {type === COLABORATORS_TOOLBAR && (
           <div>
             <Button variant="contained" onClick={handleButtonColaboratorsPopup}>
-              Add Colaborator
+              {APPTOOLBAR_ADD_COLABORATOR}
             </Button>
           </div>
         )}

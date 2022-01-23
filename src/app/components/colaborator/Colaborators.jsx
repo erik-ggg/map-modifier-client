@@ -6,7 +6,7 @@ import axios from 'axios'
 import './colaborators.css'
 
 import { Button, makeStyles, TextField } from '@material-ui/core'
-import AppToolbar from '../AppToolbar'
+import AppToolbar from '../appToolbar/AppToolbar.jsx'
 import { COLABORATORS_TOOLBAR } from '../../shared/constants'
 import MaterialTable from '@material-table/core'
 
@@ -88,8 +88,8 @@ const Colaborators = ({ socket }) => {
   const isConnected = useSelector((res) => res.state.isConnected)
   const httpRequestStatus = useSelector((res) => res.state.httpRequestStatus)
   const user = useSelector((res) => res.state.user)
-
   const userId = useSelector((state) => state.state.userId)
+
   const [colaborators, setColaborators] = useState([])
   const [isOpen, setIsOpen] = useState(false)
   const [emailTextField, setEmailTextField] = useState(null)

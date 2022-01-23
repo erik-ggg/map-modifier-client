@@ -1,3 +1,5 @@
+import { APPTOOLBAR_CONNECT, APPTOOLBAR_DISCONNECT } from '../../utils/literals'
+
 const { createSlice } = require('@reduxjs/toolkit')
 
 let initialState = {
@@ -41,11 +43,11 @@ const appSlice = createSlice({
     },
     connectedAction: (state, action) => {
       state.isConnected = true
-      state.buttonConnectText = 'Disconnect'
+      state.buttonConnectText = `${APPTOOLBAR_DISCONNECT}`
     },
     disconnectedAction: (state) => {
       state.isConnected = false
-      state.buttonConnectText = 'Connect'
+      state.buttonConnectText = `${APPTOOLBAR_CONNECT}`
     },
     logInAction: (state) => {
       state.isLogged = true

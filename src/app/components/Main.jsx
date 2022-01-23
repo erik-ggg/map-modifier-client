@@ -1,4 +1,4 @@
-import AppToolbar from './AppToolbar'
+import AppToolbar from './appToolbar/AppToolbar'
 import PopupSaveImage from './popup-save-image/PopupSaveImage'
 
 import './Main.css'
@@ -36,7 +36,6 @@ const useStyles = makeStyles((theme) => ({
     display: 'flex',
     position: 'relative',
   },
-
   canvas: {
     border: '1px solid #000000',
     left: 0,
