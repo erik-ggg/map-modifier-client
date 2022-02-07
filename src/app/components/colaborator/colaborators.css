@@ -12,3 +12,8 @@
   padding: 20px;
   width: 20rem;
 }
+
+.table .MuiPaper-root {
+  color: #1ba098 !important;
+  background-color: #004152 !important;
+}

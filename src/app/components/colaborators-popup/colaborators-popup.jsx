@@ -1,5 +1,5 @@
-import React from "react"
-import "./colaborators-popup.css"
+import React from 'react'
+import './colaborators-popup.scss'
 
 const AddColaboratorPopup = () => {
   return (

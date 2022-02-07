@@ -12,3 +12,11 @@
   padding: 20px;
   width: 20rem;
 }
+
+.MuiFormLabel-root.Mui-focused {
+  color: #004152 !important;
+}
+
+.MuiInput-underline:after {
+  border-bottom: 2px solid #004152 !important;
+}

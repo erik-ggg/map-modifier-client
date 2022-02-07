@@ -5,7 +5,12 @@ import axios from 'axios'
 
 import './colaborators.css'
 
-import { Button, makeStyles, TextField } from '@material-ui/core'
+import {
+  Button,
+  makeStyles,
+  MuiThemeProvider,
+  TextField,
+} from '@material-ui/core'
 import AppToolbar from '../appToolbar/AppToolbar.jsx'
 import { COLABORATORS_TOOLBAR } from '../../shared/constants'
 import MaterialTable from '@material-table/core'
@@ -37,6 +42,7 @@ import {
 } from '../../services/api'
 import AlertComponent from '../alert/AlertComponent'
 import { updateInRoom } from '../../redux/slices/AppSlice.js'
+import { createTheme } from '@mui/material'
 
 const tableIcons = {
   Add: forwardRef((props, ref) => <AddBox {...props} ref={ref} />),
@@ -63,6 +69,20 @@ const tableIcons = {
 }
 
 Modal.setAppElement('#root')
+
+const theme = createTheme({
+  palette: {
+    background: {
+      default: '#051622',
+    },
+    primary: {
+      main: '#4caf50',
+    },
+    secondary: {
+      main: '#ff9100',
+    },
+  },
+})
 
 const useStyles = makeStyles({
   table: {
@@ -153,59 +173,72 @@ const Colaborators = ({ socket }) => {
     <div>
       <AppToolbar type={COLABORATORS_TOOLBAR} onOpenPopup={handleOpenPopup} />
       {httpRequestStatus !== null && <AlertComponent />}
-      <MaterialTable
-        columns={[
-          { title: 'Name', field: 'name' },
-          { title: 'Email', field: 'email' },
-          {
-            title: 'Online',
-            field: 'isOnline',
-            render: (rowData) => (
-              <img
-                src={`${
-                  rowData.isOnline
-                    ? process.env.PUBLIC_URL + 'online.png'
-                    : process.env.PUBLIC_URL + 'offline.png'
-                }`}
-                alt=""
-                style={{ width: 40, borderRadius: '50%' }}
-              />
-            ),
-          },
-        ]}
-        data={colaborators}
-        icons={tableIcons}
-        title="Colaborators"
-        actions={[
-          (rowData) => ({
-            icon: 'input',
-            tooltip: 'Join colaborator',
-            onClick: (event, rowData) => joinColaborator(rowData.socketId),
-            disabled: !rowData.isOnline || !isConnected,
-          }),
-          {
-            icon: 'delete',
-            tooltip: 'Delete User',
-            onClick: (event, rowData) => deleteColaboratorAction(rowData.email),
-          },
-          {
-            icon: 'refresh',
-            tooltip: 'Refresh',
-            isFreeAction: true,
-            actionsColumnIndex: -1,
-            toolbarButtonAlignment: 'left',
-            onClick: (event) => {
-              getColaborators(user.email).then((colaborators) => {
-                setColaborators(colaborators.data)
-              })
-            },
-          },
-        ]}
-        options={{
-          toolbarButtonAlignment: 'left',
-          actionsColumnIndex: -1,
-        }}
-      />
+      <div class="table">
+        <MuiThemeProvider theme={theme}>
+          <MaterialTable
+            columns={[
+              { title: 'Name', field: 'name' },
+              { title: 'Email', field: 'email' },
+              {
+                title: 'Online',
+                field: 'isOnline',
+                render: (rowData) => (
+                  <img
+                    src={`${
+                      rowData.isOnline
+                        ? process.env.PUBLIC_URL + 'online.png'
+                        : process.env.PUBLIC_URL + 'offline.png'
+                    }`}
+                    alt=""
+                    style={{ width: 40, borderRadius: '50%' }}
+                  />
+                ),
+              },
+            ]}
+            data={colaborators}
+            icons={tableIcons}
+            title="Colaborators"
+            actions={[
+              (rowData) => ({
+                icon: 'input',
+                tooltip: 'Join colaborator',
+                onClick: (event, rowData) => joinColaborator(rowData.socketId),
+                disabled: !rowData.isOnline || !isConnected,
+              }),
+              {
+                icon: 'delete',
+                tooltip: 'Delete User',
+                onClick: (event, rowData) =>
+                  deleteColaboratorAction(rowData.email),
+              },
+              {
+                icon: 'refresh',
+                tooltip: 'Refresh',
+                isFreeAction: true,
+                actionsColumnIndex: -1,
+                toolbarButtonAlignment: 'left',
+                onClick: (event) => {
+                  getColaborators(user.email).then((colaborators) => {
+                    setColaborators(colaborators.data)
+                  })
+                },
+              },
+            ]}
+            options={{
+              toolbarButtonAlignment: 'left',
+              actionsColumnIndex: -1,
+              // headerStyle: {
+              //   backgroundColor: '#051622',
+              //   color: '#1BA098',
+              // },
+              // rowStyle: {
+              //   backgroundColor: '#051622',
+              //   color: '#1BA098',
+              // },
+            }}
+          />
+        </MuiThemeProvider>
+      </div>
       <Modal
         isOpen={isOpen}
         onRequestClose={toggleModal}

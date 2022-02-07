@@ -4,17 +4,24 @@
   left: 50%;
   transform: translate(-50%, -50%);
 
-  border: 1px solid #ccc;
-  background: #fff;
+  // border: 1px solid #ccc;
+  background-color: #97afb9;
+  color: #004152 !important;
   overflow: auto;
   border-radius: 4px;
   outline: none;
   padding: 20px;
   width: 20rem;
 }
+
 .buttonsContainer {
   display: flex;
   justify-content: space-evenly;
+
+  button {
+    background-color: #004152;
+    color: #1ba098;
+  }
 }
 .emailform {
   margin-bottom: 1rem;

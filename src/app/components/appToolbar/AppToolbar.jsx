@@ -74,6 +74,7 @@ const useStyles = makeStyles((theme) => ({
     display: 'flex',
   },
   connectOptionsContainerAux: {
+    alignItems: 'baseline',
     display: 'flex',
   },
 }))
@@ -161,6 +162,7 @@ const AppToolbar = ({
    * @param {*} event the input event
    */
   const handleInputFile = (event) => {
+    console.log('ASDASDA')
     const img = event.target.files[0]
     setImage(URL.createObjectURL(img))
     setMapFile(URL.createObjectURL(img))
@@ -228,12 +230,16 @@ const AppToolbar = ({
           <MenuItem onClick={handleLoadMap}>{APPTOOLBAR_LOAD_MAP}</MenuItem>
           {type === EDITOR_TOOLBAR && userId !== null && (
             <MenuItem>
-              <Link to="/colaborators">{APPTOOLBAR_COLABORATORS}</Link>
+              <Link className="link" to="/colaborators">
+                {APPTOOLBAR_COLABORATORS}
+              </Link>
             </MenuItem>
           )}
           {type === COLABORATORS_TOOLBAR && (
             <MenuItem>
-              <Link to="/editor">{APPTOOLBAR_EDITOR}</Link>
+              <Link to="/editor" className="link">
+                {APPTOOLBAR_EDITOR}
+              </Link>
             </MenuItem>
           )}
         </Menu>
@@ -244,47 +250,48 @@ const AppToolbar = ({
           <div className={classes.connectOptionsContainer}>
             {isLogged && (
               <div className={classes.connectOptionsContainerAux}>
-                <Button variant="text" color="inherit">
-                  {APPTOOLBAR_UPLOAD_FILE}
-                  <input
-                    type="file"
-                    onChange={handleInputFile}
-                    accept=".jpg, .jpeg, .png"
-                    hidden
-                  />
-                </Button>
+                <input
+                  accept=".jpg, .jpeg, .png"
+                  className={classes.input}
+                  id="contained-button-file"
+                  type="file"
+                  hidden
+                  onChange={handleInputFile}
+                />
+                <label htmlFor="contained-button-file">
+                  <Button variant="text" component="span">
+                    {APPTOOLBAR_UPLOAD_FILE}
+                  </Button>
+                </label>
 
                 {haveMap && (
-                  <Button onClick={handleSaveButton} color="inherit">
-                    <SaveIcon color="inherit"></SaveIcon>
-                  </Button>
+                  <>
+                    <Button onClick={handleSaveButton} color="inherit">
+                      <SaveIcon color="inherit"></SaveIcon>
+                    </Button>
+                    <Button onClick={handleDownloadButton} variant="text">
+                      {/* <SaveIcon color="inherit"></SaveIcon> */}
+                      {APPTOOLBAR_DOWNLOAD}
+                    </Button>
+                  </>
                 )}
 
-                {haveMap && (
-                  <Button onClick={handleDownloadButton} variant="text">
-                    {/* <SaveIcon color="inherit"></SaveIcon> */}
-                    {APPTOOLBAR_DOWNLOAD}
-                  </Button>
-                )}
-
                 {isConnected && (
-                  <Button onClick={showKey} color="inherit">
-                    {APPTOOLBAR_SHOW_KEY}
-                  </Button>
-                )}
-                {isConnected && (
-                  <TextField
-                    className="header"
-                    id="connection-id"
-                    onChange={(e) => setTargetConnectionId(e.target.value)}
-                    label="Paste the key here!"
-                    variant="outlined"
-                  />
-                )}
-                {isConnected && (
-                  <Button onClick={join} color="inherit">
-                    {APPTOOLBAR_JOIN}
-                  </Button>
+                  <>
+                    <Button onClick={showKey} color="inherit">
+                      {APPTOOLBAR_SHOW_KEY}
+                    </Button>
+                    <TextField
+                      className="header"
+                      id="connection-id"
+                      onChange={(e) => setTargetConnectionId(e.target.value)}
+                      label="Paste the key here!"
+                      variant="outlined"
+                    />
+                    <Button onClick={join} color="inherit">
+                      {APPTOOLBAR_JOIN}
+                    </Button>
+                  </>
                 )}
                 <Button onClick={handleConnectButton} color="inherit">
                   {!isConnected
@@ -307,7 +314,11 @@ const AppToolbar = ({
         )}
         {type === COLABORATORS_TOOLBAR && (
           <div>
-            <Button variant="contained" onClick={handleButtonColaboratorsPopup}>
+            <Button
+              variant="text"
+              className="header"
+              onClick={handleButtonColaboratorsPopup}
+            >
               {APPTOOLBAR_ADD_COLABORATOR}
             </Button>
           </div>

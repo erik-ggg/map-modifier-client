@@ -1,5 +1,16 @@
+.MuiMenu-paper {
+  background-color: #051622 !important;
+  color: #1ba098 !important;
+}
+
+.link {
+  color: inherit;
+  text-decoration: none;
+}
+
 header label,
-header div {
+header div,
+header span {
   color: #1ba098 !important;
 }
 

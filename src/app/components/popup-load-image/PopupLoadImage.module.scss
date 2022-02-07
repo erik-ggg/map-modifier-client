@@ -4,17 +4,32 @@
   left: 50%;
   transform: translate(-50%, -50%);
 
-  border: 1px solid #ccc;
-  background: #fff;
-  overflow: auto;
+  background-color: #97afb9;
+  color: #004152 !important;
+  /* border: 1px solid #ccc; */
   border-radius: 4px;
+  overflow: auto;
   outline: none;
   padding: 20px;
   width: 20rem;
+
+  ul {
+    background-color: #97afb9;
+  }
 }
+
+.theme {
+  color: #1ba098 !important;
+}
+
 .buttonsContainer {
   display: flex;
   justify-content: space-evenly;
+
+  button {
+    background-color: #004152;
+    color: #1ba098;
+  }
 }
 .emailform {
   margin-bottom: 1rem;

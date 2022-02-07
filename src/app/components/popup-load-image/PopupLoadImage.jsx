@@ -1,6 +1,6 @@
 import React from 'react'
 import { Button, Modal } from '@material-ui/core'
-import styles from './PopupLoadImage.module.css'
+import styles from './PopupLoadImage.module.scss'
 import List from '@mui/material/List'
 import ListItem from '@mui/material/ListItem'
 import ListItemButton from '@mui/material/ListItemButton'
@@ -34,7 +34,7 @@ const PopupLoadImage = ({ open, close, loadSelectedMap, images }) => {
           ))}
         </List>
         <div className={styles.buttonsContainer}>
-          <Button variant="contained" onClick={toggleModal} color="primary">
+          <Button variant="contained" onClick={toggleModal} color="inherit">
             Close
           </Button>
         </div>

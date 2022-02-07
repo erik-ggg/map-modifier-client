@@ -5,7 +5,7 @@ import './Main.css'
 import { EDITOR_TOOLBAR } from '../shared/constants'
 import { useDispatch, useSelector } from 'react-redux'
 import { Button, Divider, Grid, makeStyles } from '@material-ui/core'
-import { TwitterPicker } from 'react-color'
+import { CompactPicker } from 'react-color'
 import { useEffect, useState } from 'react'
 import { updateInRoom, setIsHost, setHaveMap } from '../redux/slices/AppSlice'
 import toast from 'react-hot-toast'
@@ -497,7 +497,7 @@ const Main = ({ socket }) => {
           <Divider orientation="vertical" flexItem />
           <div className={classes.colorsContainer}>
             <div className={classes.colorsOptionsContainer}>
-              <TwitterPicker triangle="hide" onChangeComplete={saveColor} />
+              <CompactPicker triangle="hide" onChangeComplete={saveColor} />
               <div className={classes.colorsSavesContainer}>
                 <button
                   className={classes.colorsSavesButtonClass}

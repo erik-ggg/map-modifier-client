@@ -1,6 +1,6 @@
 import { Button, Modal, TextField } from '@material-ui/core'
 import React, { useState } from 'react'
-import styles from './PopupSaveImage.module.css'
+import styles from './PopupSaveImage.module.scss'
 
 const PopupSaveImage = ({ open, close, saveImage }) => {
   const [imageTitle, setImageTitle] = useState('')
@@ -23,16 +23,17 @@ const PopupSaveImage = ({ open, close, saveImage }) => {
             id="add-colaborator-textfield"
             fullWidth
             label="Name"
-            variant="outlined"
+            // variant="outlined"
+            variant="standard"
             type="text"
             onChange={(e) => setImageTitle(e.target.value)}
           />
         </form>
         <div className={styles.buttonsContainer}>
-          <Button color="primary" onClick={handleSaveImage}>
+          <Button variant="contained" onClick={handleSaveImage}>
             Save
           </Button>
-          <Button variant="contained" onClick={toggleModal} color="primary">
+          <Button variant="contained" onClick={toggleModal}>
             Close
           </Button>
         </div>
