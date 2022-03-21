@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-const apiUri = 'http://localhost:4000/api/'
+const apiUri = 'http://13.36.239.108:4000/api/'
 const deleteColaboratorUri = apiUri + 'colaborators'
 const addColaboratorUri = apiUri + 'colaborators'
 const imagesUri = apiUri + 'images'
@@ -42,7 +42,7 @@ export const addColaborator = (email, colaboratorEmail) => {
  * @returns the promise with all the colaborators
  */
 export const getColaborators = (email) => {
-  return axios.get(`http://localhost:4000/api/colaborators/${email}`)
+  return axios.get(`${addColaboratorUri}/${email}`)
 }
 
 export const saveImageApi = (data) => {
