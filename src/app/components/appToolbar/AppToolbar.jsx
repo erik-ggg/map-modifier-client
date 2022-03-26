@@ -115,7 +115,7 @@ const AppToolbar = ({
       toast.success(DISCONNECT_SUCCESSFULL)
     } else {
       axios
-        .post(`http://localhost:4000/api/users`, {
+        .post(`http://35.180.83.209:4000/api/users`, {
           name: user.name,
           email: user.email,
           socketId: socket.id,

@@ -23,7 +23,7 @@ import { addUserData, logInAction, addKey } from './app/redux/slices/AppSlice'
 
 // let socket
 
-const socket = socketIOCient('https://13.36.239.108:4000')
+const socket = socketIOCient('http://35.180.83.209:4000')
 
 const App = () => {
   const dispatch = useDispatch()

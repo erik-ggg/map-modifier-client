@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-const apiUri = 'https://13.36.239.108:4000/api/'
+const apiUri = 'http://35.180.83.209:4000/api/'
 const deleteColaboratorUri = apiUri + 'colaborators'
 const addColaboratorUri = apiUri + 'colaborators'
 const imagesUri = apiUri + 'images'

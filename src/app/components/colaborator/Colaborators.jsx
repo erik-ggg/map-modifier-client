@@ -119,7 +119,7 @@ const Colaborators = ({ socket }) => {
       .then((res) => {
         // @todo: refactorizar
         axios
-          .get(`http://localhost:4000/api/colaborators/${user.email}`)
+          .get(`http://35.180.83.209:4000/api/colaborators/${user.email}`)
           .then((colaborators) => {
             setColaborators(colaborators.data)
           })
