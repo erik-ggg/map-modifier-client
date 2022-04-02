@@ -162,7 +162,6 @@ const AppToolbar = ({
    * @param {*} event the input event
    */
   const handleInputFile = (event) => {
-    console.log('ASDASDA')
     const img = event.target.files[0]
     setImage(URL.createObjectURL(img))
     setMapFile(URL.createObjectURL(img))
@@ -227,9 +226,11 @@ const AppToolbar = ({
           open={Boolean(anchorEl)}
           onClose={handleMenuClose}
         >
-          <MenuItem onClick={handleLoadMap}>{APPTOOLBAR_LOAD_MAP}</MenuItem>
+          <MenuItem disabled={!isLogged ? true : false} onClick={handleLoadMap}>
+            {APPTOOLBAR_LOAD_MAP}
+          </MenuItem>
           {type === EDITOR_TOOLBAR && userId !== null && (
-            <MenuItem>
+            <MenuItem disabled={!isLogged ? true : false}>
               <Link className="link" to="/colaborators">
                 {APPTOOLBAR_COLABORATORS}
               </Link>
