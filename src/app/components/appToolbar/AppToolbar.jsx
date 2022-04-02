@@ -74,7 +74,6 @@ const useStyles = makeStyles((theme) => ({
     display: 'flex',
   },
   connectOptionsContainerAux: {
-    alignItems: 'baseline',
     display: 'flex',
   },
 }))
@@ -259,7 +258,10 @@ const AppToolbar = ({
                   hidden
                   onChange={handleInputFile}
                 />
-                <label htmlFor="contained-button-file">
+                <label
+                  class={classes.connectOptionsContainer}
+                  htmlFor="contained-button-file"
+                >
                   <Button variant="text" component="span">
                     {APPTOOLBAR_UPLOAD_FILE}
                   </Button>
