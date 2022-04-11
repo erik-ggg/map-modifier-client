@@ -1,9 +1,35 @@
 import axios from 'axios'
 
-const apiUri = 'http://localhost:4000/api/'
-const deleteColaboratorUri = apiUri + 'colaborators'
-const addColaboratorUri = apiUri + 'colaborators'
-const imagesUri = apiUri + 'images'
+const colaboratorsURI = process.env.REACT_APP_API_URL + 'colaborators'
+const imagesUri = process.env.REACT_APP_API_URL + 'images'
+const usersURI = process.env.REACT_APP_API_URL + 'users'
+
+export const getUser = (email) => {
+  return axios.get(`${usersURI}/${email}`)
+}
+
+/**
+ * Adds the new user to the database
+ * @param {*} name the user name
+ * @param {*} email the user email
+ * @returns
+ */
+export const addUser = (user) => {
+  return axios.post(usersURI, JSON.stringify(user), {
+    headers: { 'Content-Type': 'application/json' },
+  })
+}
+
+/**
+ * Post the user connection in the server.
+ * @param {*} name the user name
+ * @param {*} email the user email
+ * @param {*} socketId the socketid room key
+ * @returns 500 or 201 if success
+ */
+export const connectUserToSocketIO = (name, email, socketId) => {
+  return axios.post(usersURI, { name: name, email: email, socketId, socketId })
+}
 
 /**
  * Sends the petition to delete the colaborator of the given user
@@ -15,7 +41,7 @@ export const deleteColaborator = (userId, colaboratorEmail) => {
     userId: userId,
     email: colaboratorEmail,
   })
-  return axios.delete(deleteColaboratorUri, {
+  return axios.delete(colaboratorsURI, {
     data: data,
     headers: { 'Content-Type': 'application/json' },
   })
@@ -31,7 +57,7 @@ export const addColaborator = (email, colaboratorEmail) => {
     source: email,
     target: colaboratorEmail,
   })
-  return axios.post(addColaboratorUri, data, {
+  return axios.post(colaboratorsURI, data, {
     headers: { 'Content-Type': 'application/json' },
   })
 }
@@ -42,7 +68,7 @@ export const addColaborator = (email, colaboratorEmail) => {
  * @returns the promise with all the colaborators
  */
 export const getColaborators = (email) => {
-  return axios.get(`http://localhost:4000/api/colaborators/${email}`)
+  return axios.get(`${colaboratorsURI}/${email}`)
 }
 
 export const saveImageApi = (data) => {

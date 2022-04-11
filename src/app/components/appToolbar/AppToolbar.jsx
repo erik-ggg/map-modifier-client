@@ -55,6 +55,8 @@ import {
 } from '../../shared/constants'
 import { BROADCAST_IMAGE } from '../../shared/socket-actions'
 
+import { addUser, connectUserToSocketIO, getUser } from '../../services/api'
+
 const useStyles = makeStyles((theme) => ({
   header: {
     backgroundColor: '#051622',
@@ -102,7 +104,6 @@ const AppToolbar = ({
   const user = useSelector((res) => res.state.user)
 
   const [anchorEl, setAnchorEl] = useState(null)
-  const [, setMapFile] = useState('')
   const [targetConnectionId, setTargetConnectionId] = useState('')
   const [haveMap, setHaveMapState] = useState(false)
 
@@ -113,16 +114,10 @@ const AppToolbar = ({
       dispatch(updateInRoom(false))
       toast.success(DISCONNECT_SUCCESSFULL)
     } else {
-      axios
-        .post(`http://localhost:4000/api/users`, {
-          name: user.name,
-          email: user.email,
-          socketId: socket.id,
-        })
-        .then(() => {
-          dispatch(connectedAction())
-          toast.success(CONNECT_SUCCESSFULL)
-        })
+      connectUserToSocketIO(user.name, user.email, socket.io).then(() => {
+        dispatch(connectedAction())
+        toast.success(CONNECT_SUCCESSFULL)
+      })
     }
   }
 
@@ -135,12 +130,35 @@ const AppToolbar = ({
     const user = {
       name: res.profileObj.name,
       email: res.profileObj.email,
-      id: res.googleId,
     }
+    getUser(res.profileObj.email).then((res) => {
+      if (Object.keys(res.data).length === 0) {
+        addUser(user)
+          .then((res) => {
+            if (res.status === 200) {
+              handleLoginSuccessAux(res.data.user)
+            }
+          })
+          .catch(() => {
+            toast.error('Se ha producido un error')
+          })
+      } else {
+        console.log(res)
+        handleLoginSuccessAux(res.data.user)
+      }
+    })
+  }
+
+  /**
+   * Auxiliary method for setting the user data in the react state
+   * @param {*} data user data
+   */
+  const handleLoginSuccessAux = (user) => {
     sessionStorage.setItem(SESSION_STORAGE_USER, JSON.stringify(user))
     sessionStorage.setItem(SESSION_STORAGE_LOGGED, true)
+    dispatch(logInAction(user))
     dispatch(addUserData(user))
-    dispatch(logInAction())
+    toast.success(`${user.name} ${CONNECT_SUCCESSFULL}`)
   }
 
   const showKey = () => {
@@ -163,7 +181,6 @@ const AppToolbar = ({
   const handleInputFile = (event) => {
     const img = event.target.files[0]
     setImage(URL.createObjectURL(img))
-    setMapFile(URL.createObjectURL(img))
     loadImageState()
     setHaveMapState(true)
     dispatch(setHaveMap(true))

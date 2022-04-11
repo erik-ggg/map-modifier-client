@@ -117,13 +117,7 @@ const Colaborators = ({ socket }) => {
   const addColaboratorHandler = () => {
     addColaborator(user.email, emailTextField)
       .then((res) => {
-        // @todo: refactorizar
-        axios
-          .get(`http://localhost:4000/api/colaborators/${user.email}`)
-          .then((colaborators) => {
-            setColaborators(colaborators.data)
-          })
-        // dispatch(setHttpRequestStatus(200))
+        setColaborators(res.data)
       })
       .catch((err) => {
         console.error(err)

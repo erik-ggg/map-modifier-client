@@ -23,7 +23,7 @@ import { addUserData, logInAction, addKey } from './app/redux/slices/AppSlice'
 
 // let socket
 
-const socket = socketIOCient('http://localhost:4000')
+const socket = socketIOCient(process.env.REACT_APP_SOCKETIO_URL)
 
 const App = () => {
   const dispatch = useDispatch()
