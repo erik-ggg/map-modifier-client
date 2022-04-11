@@ -13,7 +13,6 @@ import {
 } from '@material-ui/core'
 import SaveIcon from '@mui/icons-material/Save'
 import MenuIcon from '@material-ui/icons/Menu'
-import axios from 'axios'
 
 import toast from 'react-hot-toast'
 
@@ -55,7 +54,12 @@ import {
 } from '../../shared/constants'
 import { BROADCAST_IMAGE } from '../../shared/socket-actions'
 
-import { addUser, connectUserToSocketIO, getUser } from '../../services/api'
+import {
+  addUser,
+  addConnection,
+  getUser,
+  deleteConnection,
+} from '../../services/api'
 
 const useStyles = makeStyles((theme) => ({
   header: {
@@ -109,12 +113,13 @@ const AppToolbar = ({
 
   const handleConnectButton = () => {
     if (isConnected) {
-      socket.emit('disconnected')
-      dispatch(disconnectedAction())
-      dispatch(updateInRoom(false))
-      toast.success(DISCONNECT_SUCCESSFULL)
+      deleteConnection(user.email).then(() => {
+        dispatch(disconnectedAction())
+        dispatch(updateInRoom(false))
+        toast.success(DISCONNECT_SUCCESSFULL)
+      })
     } else {
-      connectUserToSocketIO(user.name, user.email, socket.io).then(() => {
+      addConnection(user.email, socket.id).then(() => {
         dispatch(connectedAction())
         toast.success(CONNECT_SUCCESSFULL)
       })
