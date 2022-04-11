@@ -1,6 +1,7 @@
 import axios from 'axios'
 
 const colaboratorsURI = process.env.REACT_APP_API_URL + 'colaborators'
+const connectionURI = process.env.REACT_APP_API_URL + 'connections'
 const imagesUri = process.env.REACT_APP_API_URL + 'images'
 const usersURI = process.env.REACT_APP_API_URL + 'users'
 
@@ -21,14 +22,28 @@ export const addUser = (user) => {
 }
 
 /**
+ * Removes the connection for the user with the given email
+ * @param {*} email the user email
+ */
+export const deleteConnection = (email) => {
+  return axios.delete(`${connectionURI}/${email}`)
+}
+
+/**
  * Post the user connection in the server.
  * @param {*} name the user name
  * @param {*} email the user email
  * @param {*} socketId the socketid room key
  * @returns 500 or 201 if success
  */
-export const connectUserToSocketIO = (name, email, socketId) => {
-  return axios.post(usersURI, { name: name, email: email, socketId, socketId })
+export const addConnection = (email, socketId) => {
+  const connection = {
+    user_id: email,
+    socket_id: socketId,
+  }
+  return axios.post(connectionURI, JSON.stringify(connection), {
+    headers: { 'Content-Type': 'application/json' },
+  })
 }
 
 /**
