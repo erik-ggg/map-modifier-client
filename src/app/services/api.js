@@ -22,11 +22,11 @@ export const addUser = (user) => {
 }
 
 /**
- * Removes the connection for the user with the given email
- * @param {*} email the user email
+ * Removes the connection for the user with the given socket id
+ * @param {*} socketId the socket id
  */
-export const deleteConnection = (email) => {
-  return axios.delete(`${connectionURI}/${email}`)
+export const deleteConnection = (socketId) => {
+  return axios.delete(`${connectionURI}/${socketId}`)
 }
 
 /**
@@ -56,6 +56,7 @@ export const deleteColaborator = (userId, colaboratorEmail) => {
     userId: userId,
     email: colaboratorEmail,
   })
+  console.log(data)
   return axios.delete(colaboratorsURI, {
     data: data,
     headers: { 'Content-Type': 'application/json' },

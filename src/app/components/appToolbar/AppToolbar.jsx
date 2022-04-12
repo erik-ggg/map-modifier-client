@@ -113,7 +113,7 @@ const AppToolbar = ({
 
   const handleConnectButton = () => {
     if (isConnected) {
-      deleteConnection(user.email).then(() => {
+      deleteConnection(socket.id).then(() => {
         dispatch(disconnectedAction())
         dispatch(updateInRoom(false))
         toast.success(DISCONNECT_SUCCESSFULL)
@@ -247,7 +247,10 @@ const AppToolbar = ({
           open={Boolean(anchorEl)}
           onClose={handleMenuClose}
         >
-          <MenuItem disabled={!isLogged ? true : false} onClick={handleLoadMap}>
+          <MenuItem
+            disabled={!isLogged || type === COLABORATORS_TOOLBAR ? true : false}
+            onClick={handleLoadMap}
+          >
             {APPTOOLBAR_LOAD_MAP}
           </MenuItem>
           {type === EDITOR_TOOLBAR && userId !== null && (

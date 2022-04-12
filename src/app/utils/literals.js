@@ -26,3 +26,6 @@ export const APPTOOLBAR_LOGIN = 'Login'
 export const APPTOOLBAR_EDITOR = 'Editor'
 export const APPTOOLBAR_COLABORATORS = 'Colaborators'
 export const APPTOOLBAR_LOAD_MAP = 'Load map'
+
+export const GLOBAL_ADD = 'Add'
+export const GLOBAL_CLOSE = 'Close'

@@ -14,6 +14,8 @@ import AppToolbar from '../appToolbar/AppToolbar.jsx'
 import { COLABORATORS_TOOLBAR } from '../../shared/constants'
 import MaterialTable from '@material-table/core'
 
+import toast from 'react-hot-toast'
+
 import AddBox from '@material-ui/icons/AddBox'
 import ArrowDownward from '@material-ui/icons/ArrowDownward'
 import Check from '@material-ui/icons/Check'
@@ -42,6 +44,7 @@ import {
 import AlertComponent from '../alert/AlertComponent'
 import { updateInRoom } from '../../redux/slices/AppSlice.js'
 import { createTheme } from '@mui/material'
+import { GLOBAL_ADD, GLOBAL_CLOSE } from '../../utils/literals'
 
 const tableIcons = {
   Add: forwardRef((props, ref) => <AddBox {...props} ref={ref} />),
@@ -111,26 +114,36 @@ const Colaborators = ({ socket }) => {
   const isConnected = useSelector((res) => res.state.isConnected)
   const httpRequestStatus = useSelector((res) => res.state.httpRequestStatus)
   const user = useSelector((res) => res.state.user)
-  const userId = useSelector((state) => state.state.userId)
 
   const [colaborators, setColaborators] = useState([])
+  const [isColaboratorEmailValid, setIsColaboratorEmailValid] = useState(false)
   const [isOpen, setIsOpen] = useState(false)
   const [emailTextField, setEmailTextField] = useState(null)
 
   const addColaboratorHandler = () => {
     addColaborator(user.email, emailTextField)
       .then((res) => {
-        setColaborators(res.data)
+        if (res.status === 200) {
+          toggleModal()
+          getColaborators(user.email).then((colaborators) => {
+            setColaborators(colaborators.data)
+          })
+        }
       })
       .catch((err) => {
-        console.error(err)
+        if (err.response.status === 404) {
+          toast.error('No se puedo encontrar el colaborador con ese email')
+        } else if (err.response.status === 400) {
+          toast.error('El colaborador ya ha sido agregado')
+        } else {
+          toast.error('Se ha producido un error interno')
+        }
       })
   }
 
   const deleteColaboratorAction = (email) => {
-    deleteColaborator(userId, email)
+    deleteColaborator(user.email, email)
       .then((res) => {
-        // @todo: refresh list after success
         getColaborators(user.email).then((colaborators) => {
           setColaborators(colaborators.data)
         })
@@ -166,6 +179,15 @@ const Colaborators = ({ socket }) => {
     setIsOpen(true)
   }
 
+  const handleColaboratorEmailInput = (email) => {
+    if (/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(email)) {
+      setIsColaboratorEmailValid(true)
+      setEmailTextField(email)
+    } else {
+      setIsColaboratorEmailValid(false)
+    }
+  }
+
   return (
     <div>
       <AppToolbar type={COLABORATORS_TOOLBAR} onOpenPopup={handleOpenPopup} />
@@ -187,7 +209,7 @@ const Colaborators = ({ socket }) => {
                         : process.env.PUBLIC_URL + 'offline.png'
                     }`}
                     alt=""
-                    style={{ width: 40, borderRadius: '50%' }}
+                    style={{ width: 20, borderRadius: '50%' }}
                   />
                 ),
               },
@@ -224,14 +246,6 @@ const Colaborators = ({ socket }) => {
             options={{
               toolbarButtonAlignment: 'left',
               actionsColumnIndex: -1,
-              // headerStyle: {
-              //   backgroundColor: '#051622',
-              //   color: '#1BA098',
-              // },
-              // rowStyle: {
-              //   backgroundColor: '#051622',
-              //   color: '#1BA098',
-              // },
             }}
           />
         </MuiThemeProvider>
@@ -247,26 +261,27 @@ const Colaborators = ({ socket }) => {
         <form className={classes.emailform} noValidate autoComplete="off">
           <TextField
             id="add-colaborator-textfield"
+            autoComplete="none"
             fullWidth
             label="Email"
             variant="standard"
-            type="email"
-            onChange={(e) => setEmailTextField(e.target.value)}
+            onChange={(e) => handleColaboratorEmailInput(e.target.value)}
           />
         </form>
         <div className={classes.buttonsContainer}>
           <Button
-            onClick={addColaboratorHandler}
             className={classes.emailButtons}
+            disabled={!isColaboratorEmailValid}
+            onClick={addColaboratorHandler}
           >
-            Add
+            {GLOBAL_ADD}
           </Button>
           <Button
             variant="contained"
             onClick={toggleModal}
             className={classes.emailButtons}
           >
-            Close
+            {GLOBAL_CLOSE}
           </Button>
         </div>
       </Modal>
