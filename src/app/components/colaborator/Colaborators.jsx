@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useHistory } from 'react-router-dom'
-import axios from 'axios'
 
 import './colaborators.css'
 
@@ -91,6 +90,10 @@ const useStyles = makeStyles({
   buttonsContainer: {
     display: 'flex',
     justifyContent: 'space-evenly',
+  },
+  emailButtons: {
+    backgroundColor: '#004152',
+    color: '#1ba098',
   },
   emailform: {
     marginBottom: '1rem',
@@ -246,16 +249,23 @@ const Colaborators = ({ socket }) => {
             id="add-colaborator-textfield"
             fullWidth
             label="Email"
-            variant="outlined"
+            variant="standard"
             type="email"
             onChange={(e) => setEmailTextField(e.target.value)}
           />
         </form>
         <div className={classes.buttonsContainer}>
-          <Button onClick={addColaboratorHandler} color="primary">
+          <Button
+            onClick={addColaboratorHandler}
+            className={classes.emailButtons}
+          >
             Add
           </Button>
-          <Button variant="contained" onClick={toggleModal} color="primary">
+          <Button
+            variant="contained"
+            onClick={toggleModal}
+            className={classes.emailButtons}
+          >
             Close
           </Button>
         </div>

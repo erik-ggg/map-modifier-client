@@ -13,6 +13,11 @@
   width: 20rem;
 }
 
+.MuiTableCell-head {
+  color: #1ba098 !important;
+  background-color: #004152 !important;
+}
+
 .MuiFormLabel-root.Mui-focused {
   color: #004152 !important;
 }
