@@ -1,0 +1,60 @@
+.drawToolbarContainer {
+  background-color: #cfd1e3;
+  display: flex;
+  flex-direction: row;
+  padding-top: 0.5rem;
+  // border: 1px solid ${theme.palette.divider};
+  //   border: theme.shape.borderRadius;
+
+  .shapesContainer {
+    display: flex;
+    flex-direction: column;
+    margin-left: 2rem;
+    margin-right: 2rem;
+  }
+
+  .colorsContainer {
+    display: flex;
+    flex-direction: column;
+    margin-left: 2rem;
+    margin-right: 2rem;
+
+    .colorsOptionsContainer {
+      display: flex;
+      flex-direction: row;
+
+      .colorsSavesContainer {
+        display: block;
+        padding-left: 1rem;
+        padding-top: 1rem;
+
+        .colorsSavesButtonClass {
+          height: 30px;
+          width: 30px;
+          cursor: pointer;
+          position: relative;
+          outline: none;
+          float: left;
+          border-radius: 4px;
+          border-width: 0;
+          margin: 0px 6px 6px 0px;
+        }
+      }
+    }
+
+    .colorsTitleClass {
+      margin-bottom: 0.3rem;
+      margin-top: 0.3rem;
+      text-align: center;
+    }
+  }
+
+  .penTypeButtonsContainer {
+    margin-top: 10px;
+  }
+
+  .penTypeTitle {
+    text-align: center;
+    padding-top: 11px;
+  }
+}

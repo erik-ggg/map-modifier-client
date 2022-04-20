@@ -4,8 +4,6 @@ import PopupSaveImage from './popup-save-image/PopupSaveImage'
 import './Main.css'
 import { EDITOR_TOOLBAR } from '../shared/constants'
 import { useDispatch, useSelector } from 'react-redux'
-import { Button, Divider, Grid, makeStyles } from '@material-ui/core'
-import { CompactPicker } from 'react-color'
 import { useEffect, useState } from 'react'
 import { updateInRoom, setIsHost, setHaveMap } from '../redux/slices/AppSlice'
 import toast from 'react-hot-toast'
@@ -22,11 +20,11 @@ import {
 } from '../shared/socket-actions'
 import { getUserImagesFromDB, saveImageApi } from '../services/api'
 import PopupLoadImage from './popup-load-image/PopupLoadImage'
+import { EditorToolbar } from './editorToolbar/EditorToolbar'
+import { makeStyles } from '@material-ui/core'
 
 let prevPos = { offsetX: 0, offsetY: 0 }
 // let line = []
-let color0, color1, color2, color3, color4
-let colors = []
 let canvas
 let image
 let canvasCtx
@@ -42,46 +40,8 @@ const useStyles = makeStyles((theme) => ({
     position: 'absolute',
     top: 0,
   },
-  colorsContainer: {
-    display: 'flex',
-    flexDirection: 'column',
-  },
-  colorsOptionsContainer: {
-    display: 'flex',
-    flexDirection: 'row',
-  },
-  colorsSavesContainer: {
-    textAlign: 'center',
-    display: 'flex',
-    padding: '2rem 9px',
-  },
-  colorsSavesButtonClass: {
-    height: '30px',
-    width: '30px',
-    cursor: 'pointer',
-    position: 'relative',
-    outline: 'none',
-    float: 'left',
-    borderRadius: '4px',
-    borderWidth: '0',
-    margin: '0px 6px 6px 0px',
-  },
   colorsTitleClass: {
     textAlign: 'center',
-  },
-  drawToolbarContainer: {
-    display: 'flex',
-    flexDirection: 'row',
-    height: '7rem',
-    backgroundColor: '#cfd1e3',
-    border: `1px solid ${theme.palette.divider}`,
-    borderRadius: theme.shape.borderRadius,
-  },
-  shapesContainer: {
-    display: 'flex',
-    flexDirection: 'column',
-    marginLeft: '2rem',
-    marginRight: '2rem',
   },
 }))
 
@@ -99,7 +59,6 @@ const Main = ({ socket }) => {
   const [mapFile, setMapFile] = useState(null)
   const [ctx, setCtx] = useState(null)
   const [isPainting, setIsPainting] = useState(false)
-  const [nextColor, setNextColor] = useState(0)
   const [drawingFigure, setDrawingFigure] = useState(0)
   // const [isErasing, setIsErasing] = useState(false)
   // const [haveMapAux, setHaveMapAux] = useState(null)
@@ -307,39 +266,6 @@ const Main = ({ socket }) => {
   }
 
   /**
-   * Saves the color selected by the user in the color picker storing it inside the button css.
-   * Also, changes the canvas context color
-   * @param {*} color the selected color
-   */
-  const saveColor = (color) => {
-    drawConfig.strokeStyle = color.hex
-    canvasCtx.strokeStyle = color.hex
-
-    colors[nextColor] = color.hex
-    switch (nextColor) {
-      case 0:
-        color0.style.backgroundColor = color.hex
-        break
-      case 1:
-        color1.style.backgroundColor = color.hex
-        break
-      case 2:
-        color2.style.backgroundColor = color.hex
-        break
-      case 3:
-        color3.style.backgroundColor = color.hex
-        break
-      case 4:
-        color4.style.backgroundColor = color.hex
-        break
-      default:
-        break
-    }
-    if (nextColor + 1 > 4) setNextColor(0)
-    else setNextColor(nextColor + 1)
-  }
-
-  /**
    * Set canvas context draw options
    * @param {*} config the config that will be used to draw
    */
@@ -347,15 +273,6 @@ const Main = ({ socket }) => {
     canvasCtx.strokeStyle = config.strokeStyle
     canvasCtx.lineJoin = config.lineJoin
     canvasCtx.lineWidth = config.lineWidth
-  }
-
-  const restoreSavedColor = (button) => {
-    canvasCtx.strokeStyle = button.style.backgroundColor
-  }
-
-  const setLineWidth = (width) => {
-    canvasCtx.lineWidth = width
-    drawConfig.lineWidth = width
   }
 
   /**
@@ -449,17 +366,6 @@ const Main = ({ socket }) => {
     // setImageLoaded(true)
   }
 
-  const penButtonHandler = () => {
-    // setIsErasing(true)
-    canvasCtx.globalCompositeOperation = 'source-over'
-    canvasCtx.strokeStyle = drawConfig.strokeStyle
-  }
-
-  const eraserButtonHandler = () => {
-    // setIsErasing(false)
-    canvasCtx.globalCompositeOperation = 'destination-out'
-  }
-
   return (
     <div>
       {/* <Toaster position='top-center' reverseOrder={false} /> */}
@@ -475,81 +381,11 @@ const Main = ({ socket }) => {
         setImage={setImage}
       />
       {haveMap && (
-        <Grid
-          container
-          alignItems="center"
-          className={classes.drawToolbarContainer}
-        >
-          <div className={classes.shapesContainer}>
-            Shapes
-            <button onClick={() => setDrawingFigure(1)}>Line</button>
-            <button onClick={() => setDrawingFigure(2)}>Rectangle</button>
-            <button onClick={() => setDrawingFigure(3)}>Circle</button>
-          </div>
-          <Divider orientation="vertical" flexItem />
-          <div className={classes.shapesContainer}>
-            Size
-            <button onClick={() => setLineWidth(2)}>Line 1</button>
-            <button onClick={() => setLineWidth(4)}>Line 2</button>
-            <button onClick={() => setLineWidth(6)}>Line 3</button>
-            <button onClick={() => setLineWidth(8)}>Line 4</button>
-          </div>
-          <Divider orientation="vertical" flexItem />
-          <div className={classes.colorsContainer}>
-            <div className={classes.colorsOptionsContainer}>
-              <CompactPicker triangle="hide" onChangeComplete={saveColor} />
-              <div className={classes.colorsSavesContainer}>
-                <button
-                  className={classes.colorsSavesButtonClass}
-                  onClick={() => {
-                    restoreSavedColor(color0)
-                  }}
-                  ref={(ref) => (color0 = ref)}
-                ></button>
-                <button
-                  className={classes.colorsSavesButtonClass}
-                  onClick={() => {
-                    restoreSavedColor(color1)
-                  }}
-                  ref={(ref) => (color1 = ref)}
-                ></button>
-                <button
-                  className={classes.colorsSavesButtonClass}
-                  onClick={() => {
-                    restoreSavedColor(color2)
-                  }}
-                  ref={(ref) => (color2 = ref)}
-                ></button>
-                <button
-                  className={classes.colorsSavesButtonClass}
-                  onClick={() => {
-                    restoreSavedColor(color3)
-                  }}
-                  ref={(ref) => (color3 = ref)}
-                ></button>
-                <button
-                  className={classes.colorsSavesButtonClass}
-                  onClick={() => {
-                    restoreSavedColor(color4)
-                  }}
-                  ref={(ref) => (color4 = ref)}
-                ></button>
-              </div>
-              <div>
-                <Button onClick={penButtonHandler} color="primary">
-                  Pen
-                </Button>
-              </div>
-              <div>
-                <Button onClick={eraserButtonHandler} color="primary">
-                  Eraser
-                </Button>
-              </div>
-              {/* <div className={classes.colorsTitleClass}>Color</div> */}
-            </div>
-            {/* <div className={classes.colorsTitleClass}>Color</div> */}
-          </div>
-        </Grid>
+        <EditorToolbar
+          canvasCtx={canvasCtx}
+          drawConfig={drawConfig}
+          setDrawingFigure={setDrawingFigure}
+        />
       )}
       <div className={classes.mapContainer} id="map-container">
         <img
