@@ -3,14 +3,40 @@
   display: flex;
   flex-direction: row;
   padding-top: 0.5rem;
-  // border: 1px solid ${theme.palette.divider};
-  //   border: theme.shape.borderRadius;
+  text-align: center;
 
   .shapesContainer {
     display: flex;
     flex-direction: column;
     margin-left: 2rem;
     margin-right: 2rem;
+    min-width: 0;
+    padding: 0;
+
+    .shapesButtonsContainer {
+      margin-bottom: 1.5rem;
+      margin-top: 1.5rem;
+    }
+
+    .linesWidthContainer {
+      display: flex;
+
+      .pxline1 {
+        font-size: 12px;
+      }
+      .pxline3 {
+        font-size: 32px;
+      }
+      .pxline5 {
+        font-size: 48px;
+      }
+      .pxline8 {
+        font-size: 76px;
+      }
+    }
+  }
+
+  .shapesTitles {
   }
 
   .colorsContainer {
@@ -45,16 +71,19 @@
     .colorsTitleClass {
       margin-bottom: 0.3rem;
       margin-top: 0.3rem;
-      text-align: center;
     }
   }
 
   .penTypeButtonsContainer {
     margin-top: 10px;
+
+    .eraserIcon {
+      height: 24px;
+      width: 24px;
+    }
   }
 
   .penTypeTitle {
-    text-align: center;
     padding-top: 11px;
   }
 }

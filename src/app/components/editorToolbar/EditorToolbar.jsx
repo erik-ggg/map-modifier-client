@@ -3,7 +3,11 @@ import React, { useState } from 'react'
 import { Button, Divider, Grid } from '@material-ui/core'
 import { CompactPicker } from 'react-color'
 import CreateSharpIcon from '@mui/icons-material/CreateSharp'
-import AutoFixNormalSharpIcon from '@mui/icons-material/AutoFixNormalSharp'
+import CircleIcon from '@mui/icons-material/Circle'
+import Crop75Icon from '@mui/icons-material/Crop75'
+import CropSquareIcon from '@mui/icons-material/CropSquare'
+import { BsFillEraserFill } from 'react-icons/bs'
+import { AiOutlineLine } from 'react-icons/ai'
 
 import './EditorToolbar.scss'
 
@@ -73,18 +77,36 @@ export const EditorToolbar = ({ canvasCtx, drawConfig, setDrawingFigure }) => {
   return (
     <Grid container alignItems="center" className="drawToolbarContainer">
       <div className="shapesContainer">
-        Shapes
-        <button onClick={() => setDrawingFigure(1)}>Line</button>
-        <button onClick={() => setDrawingFigure(2)}>Rectangle</button>
-        <button onClick={() => setDrawingFigure(3)}>Circle</button>
+        <div className="shapesButtonsContainer">
+          <Button onClick={() => setDrawingFigure(1)}>
+            <CropSquareIcon />
+          </Button>
+          <Button onClick={() => setDrawingFigure(2)}>
+            <Crop75Icon />
+          </Button>
+          <Button onClick={() => setDrawingFigure(3)}>
+            <CircleIcon />
+          </Button>
+        </div>
+        <div className="shapesTitles">Shapes</div>
       </div>
       <Divider orientation="vertical" flexItem />
       <div className="shapesContainer">
-        Size
-        <button onClick={() => setLineWidth(2)}>Line 1</button>
-        <button onClick={() => setLineWidth(4)}>Line 2</button>
-        <button onClick={() => setLineWidth(6)}>Line 3</button>
-        <button onClick={() => setLineWidth(8)}>Line 4</button>
+        <div className="linesWidthContainer">
+          <Button onClick={() => setLineWidth(1)}>
+            1px <AiOutlineLine className="pxline1" />
+          </Button>
+          <Button onClick={() => setLineWidth(3)}>
+            3px <AiOutlineLine className="pxline3" />
+          </Button>
+          <Button onClick={() => setLineWidth(5)}>
+            5px <AiOutlineLine className="pxline5" />
+          </Button>
+          <Button onClick={() => setLineWidth(8)}>
+            8px <AiOutlineLine className="pxline8" />
+          </Button>
+        </div>
+        <div className="sizesContainer">Size</div>
       </div>
       <Divider orientation="vertical" flexItem />
       <div className="colorsContainer">
@@ -152,7 +174,7 @@ export const EditorToolbar = ({ canvasCtx, drawConfig, setDrawingFigure }) => {
           </div>
           <div>
             <Button onClick={eraserButtonHandler}>
-              <AutoFixNormalSharpIcon />
+              <BsFillEraserFill className="eraserIcon" />
             </Button>
           </div>
         </div>
