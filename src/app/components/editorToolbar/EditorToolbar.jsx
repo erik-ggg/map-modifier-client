@@ -27,6 +27,7 @@ export const EditorToolbar = ({ canvasCtx, drawConfig, setDrawingFigure }) => {
   const eraserButtonHandler = () => {
     // setIsErasing(false)
     canvasCtx.globalCompositeOperation = 'destination-out'
+    drawConfig.globalCompositeOperation = canvasCtx.globalCompositeOperation
   }
 
   const restoreSavedColor = (button) => {

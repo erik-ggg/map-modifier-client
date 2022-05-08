@@ -66,14 +66,11 @@ const Main = ({ socket }) => {
     lineJoin: 'round',
     lineWidth: 2,
     strokeStyle: 'black',
+    globalCompositeOperation: 'source-over',
   })
   const [isSaveImageDialogOpen, setIsSaveImageDialogOpen] = useState(false)
   const [isLoadImageDialogOpen, setIsLoadImageDialogOpen] = useState(false)
   const [userSavedImages, setUserSavedImages] = useState([])
-
-  useEffect(() => {
-    console.log(haveMap)
-  }, [haveMap])
 
   useEffect(() => {
     socket.on(END_DRAWING, (id) => {
@@ -272,6 +269,7 @@ const Main = ({ socket }) => {
     canvasCtx.strokeStyle = config.strokeStyle
     canvasCtx.lineJoin = config.lineJoin
     canvasCtx.lineWidth = config.lineWidth
+    canvasCtx.globalCompositeOperation = config.globalCompositeOperation
   }
 
   /**
