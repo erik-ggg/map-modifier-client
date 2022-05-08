@@ -108,10 +108,9 @@ const Main = ({ socket }) => {
     })
 
     socket.on(SEND_IMAGE_AND_CANVAS_TO_CLIENT, (res) => {
-      console.log('Receiving image and canvas', res)
-
       setMapFile(res.image)
 
+      // Load canvas
       image.onload = () => {
         canvasCtx.clearRect(0, 0, canvas.width, canvas.height)
         const imgAux = new Image()
@@ -130,7 +129,7 @@ const Main = ({ socket }) => {
       dispatch(updateInRoom(true))
       if (image.src.length > 0) {
         const data = {
-          // image: base64Image(),
+          image: base64Image(),
           canvas: canvas.toDataURL(),
           clientId: clientId,
         }

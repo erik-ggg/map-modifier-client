@@ -6,7 +6,6 @@
 
   background-color: #97afb9;
   color: #004152 !important;
-  /* border: 1px solid #ccc; */
   border-radius: 4px;
   overflow: auto;
   outline: none;
@@ -15,6 +14,10 @@
 
   ul {
     background-color: #97afb9;
+  }
+
+  hr {
+    border-color: #004152;
   }
 }
 
