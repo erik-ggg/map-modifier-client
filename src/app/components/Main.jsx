@@ -5,11 +5,17 @@ import './Main.css'
 import { EDITOR_TOOLBAR } from '../shared/constants'
 import { useDispatch, useSelector } from 'react-redux'
 import { useEffect, useState } from 'react'
-import { updateInRoom, setIsHost, setHaveMap } from '../redux/slices/AppSlice'
+import {
+  updateInRoom,
+  setIsHost,
+  setHaveMap,
+  connectedAction,
+} from '../redux/slices/AppSlice'
 import toast from 'react-hot-toast'
 
 import {
   BROADCAST_DRAWING,
+  CONNECTED,
   // BROADCAST_IMAGE,
   END_DRAWING,
   RECEIVING_DRAWING,
@@ -18,10 +24,15 @@ import {
   SHARE_DRAW_CONFIG,
   START_DRAWING,
 } from '../shared/socket-actions'
-import { getUserImagesFromDB, saveImageApi } from '../services/api'
+import {
+  addConnection,
+  getUserImagesFromDB,
+  saveImageApi,
+} from '../services/api'
 import PopupLoadImage from './popup-load-image/PopupLoadImage'
 import { EditorToolbar } from './editorToolbar/EditorToolbar'
 import { makeStyles } from '@material-ui/core'
+import { CONNECT_SUCCESSFULL } from '../utils/literals'
 
 let prevPos = { offsetX: 0, offsetY: 0 }
 // let line = []
@@ -71,6 +82,16 @@ const Main = ({ socket }) => {
   const [isSaveImageDialogOpen, setIsSaveImageDialogOpen] = useState(false)
   const [isLoadImageDialogOpen, setIsLoadImageDialogOpen] = useState(false)
   const [userSavedImages, setUserSavedImages] = useState([])
+
+  const test = () => {
+    if (user !== null) {
+      addConnection(user.id, socket.id).then(() => {
+        dispatch(connectedAction())
+        dispatch(updateInRoom(false))
+        toast.success(CONNECT_SUCCESSFULL)
+      })
+    }
+  }
 
   useEffect(() => {
     socket.on(END_DRAWING, (id) => {
@@ -124,14 +145,7 @@ const Main = ({ socket }) => {
     socket.on('user joined', (clientId) => {
       dispatch(setIsHost(true))
       dispatch(updateInRoom(true))
-      if (image.src.length > 0) {
-        const data = {
-          image: base64Image(),
-          canvas: canvas.toDataURL(),
-          clientId: clientId,
-        }
-        socket.emit(SEND_IMAGE_AND_CANVAS_TO_CLIENT, data)
-      }
+      sendImageAndCanvasContextAux(clientId)
       toast('User joined!', {
         icon: '🙋‍♀️',
       })
@@ -139,12 +153,34 @@ const Main = ({ socket }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
+  socket.on(CONNECTED, test)
+
+  // socket.on(CONNECTED, () => {
+  //   console.log('connected', user, socket)
+  //   addConnection(user.id, socket.id).then(() => {
+  //     dispatch(connectedAction())
+  //     dispatch(updateInRoom(false))
+  //     toast.success(CONNECT_SUCCESSFULL)
+  //   })
+  // })
+
   useEffect(() => {
     if (!ctx) {
       setCtx(canvas.getContext('2d'))
       canvasCtx = canvas.getContext('2d')
     }
   }, [ctx])
+
+  const sendImageAndCanvasContextAux = (clientId) => {
+    if (image.src.length > 0) {
+      const data = {
+        image: base64Image(),
+        canvas: canvas.toDataURL(),
+        clientId: clientId,
+      }
+      socket.emit(SEND_IMAGE_AND_CANVAS_TO_CLIENT, data)
+    }
+  }
 
   const handleImageLoaded = () => {
     canvas.height = image.height

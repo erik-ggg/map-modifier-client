@@ -114,15 +114,20 @@ const AppToolbar = ({
   const handleConnectButton = () => {
     if (isConnected) {
       deleteConnection(socket.id).then(() => {
+        socket.disconnect()
         dispatch(disconnectedAction())
         dispatch(updateInRoom(false))
         toast.success(DISCONNECT_SUCCESSFULL)
       })
     } else {
-      addConnection(user.email, socket.id).then(() => {
-        dispatch(connectedAction())
-        toast.success(CONNECT_SUCCESSFULL)
-      })
+      if (socket.disconnected) {
+        socket.connect()
+      } else {
+        addConnection(user.email, socket.id).then(() => {
+          dispatch(connectedAction())
+          toast.success(CONNECT_SUCCESSFULL)
+        })
+      }
     }
   }
 
@@ -284,7 +289,7 @@ const AppToolbar = ({
                   onChange={handleInputFile}
                 />
                 <label
-                  class={classes.connectOptionsContainer}
+                  className={classes.connectOptionsContainer}
                   htmlFor="contained-button-file"
                 >
                   <Button variant="text" component="span">

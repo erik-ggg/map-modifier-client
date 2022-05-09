@@ -192,7 +192,7 @@ const Colaborators = ({ socket }) => {
     <div>
       <AppToolbar type={COLABORATORS_TOOLBAR} onOpenPopup={handleOpenPopup} />
       {httpRequestStatus !== null && <AlertComponent />}
-      <div class="table">
+      <div className="table">
         <MuiThemeProvider theme={theme}>
           <MaterialTable
             columns={[
