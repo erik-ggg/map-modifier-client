@@ -44,7 +44,7 @@ import {
 import AlertComponent from '../alert/AlertComponent'
 import { updateInRoom } from '../../redux/slices/AppSlice.js'
 import { createTheme } from '@mui/material'
-import { GLOBAL_ADD, GLOBAL_CLOSE } from '../../utils/literals'
+import { GLOBAL_ADD, GLOBAL_CLOSE } from '../../shared/literals'
 
 const tableIcons = {
   Add: forwardRef((props, ref) => <AddBox {...props} ref={ref} />),
@@ -121,24 +121,26 @@ const Colaborators = ({ socket }) => {
   const [emailTextField, setEmailTextField] = useState(null)
 
   const addColaboratorHandler = () => {
-    addColaborator(user.email, emailTextField)
-      .then((res) => {
-        if (res.status === 200) {
-          toggleModal()
-          getColaborators(user.email).then((colaborators) => {
-            setColaborators(colaborators.data)
-          })
-        }
-      })
-      .catch((err) => {
-        if (err.response.status === 404) {
-          toast.error('No se puedo encontrar el colaborador con ese email')
-        } else if (err.response.status === 400) {
-          toast.error('El colaborador ya ha sido agregado')
-        } else {
-          toast.error('Se ha producido un error interno')
-        }
-      })
+    if (user.email !== emailTextField) {
+      addColaborator(user.email, emailTextField)
+        .then((res) => {
+          if (res.status === 200) {
+            toggleModal()
+            getColaborators(user.email).then((colaborators) => {
+              setColaborators(colaborators.data)
+            })
+          }
+        })
+        .catch((err) => {
+          if (err.response.status === 404) {
+            toast.error('No se puedo encontrar el colaborador con ese email')
+          } else if (err.response.status === 400) {
+            toast.error('El colaborador ya ha sido agregado')
+          } else {
+            toast.error('Se ha producido un error interno')
+          }
+        })
+    }
   }
 
   const deleteColaboratorAction = (email) => {

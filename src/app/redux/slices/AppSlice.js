@@ -1,4 +1,7 @@
-import { APPTOOLBAR_CONNECT, APPTOOLBAR_DISCONNECT } from '../../utils/literals'
+import {
+  APPTOOLBAR_CONNECT,
+  APPTOOLBAR_DISCONNECT,
+} from '../../shared/literals'
 
 const { createSlice } = require('@reduxjs/toolkit')
 

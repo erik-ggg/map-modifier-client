@@ -2,7 +2,7 @@ import AppToolbar from './appToolbar/AppToolbar'
 import PopupSaveImage from './popup-save-image/PopupSaveImage'
 
 import './Main.css'
-import { EDITOR_TOOLBAR } from '../shared/constants'
+import { EDITOR_TOOLBAR, SESSION_STORAGE_USER } from '../shared/constants'
 import { useDispatch, useSelector } from 'react-redux'
 import { useEffect, useState } from 'react'
 import {
@@ -15,6 +15,7 @@ import toast from 'react-hot-toast'
 
 import {
   BROADCAST_DRAWING,
+  CONNECT,
   CONNECTED,
   // BROADCAST_IMAGE,
   END_DRAWING,
@@ -32,10 +33,9 @@ import {
 import PopupLoadImage from './popup-load-image/PopupLoadImage'
 import { EditorToolbar } from './editorToolbar/EditorToolbar'
 import { makeStyles } from '@material-ui/core'
-import { CONNECT_SUCCESSFULL } from '../utils/literals'
+import { CONNECT_SUCCESSFULL } from '../shared/literals'
 
 let prevPos = { offsetX: 0, offsetY: 0 }
-// let line = []
 let canvas
 let image
 let canvasCtx
@@ -63,7 +63,7 @@ const Main = ({ socket }) => {
   const inRoom = useSelector((res) => res.state.inRoom)
   const haveMap = useSelector((res) => res.state.haveMap)
   const user = useSelector((res) => res.state.user)
-  // const isConnected = useSelector((res) => res.state.isConnected)
+  const isConnected = useSelector((res) => res.state.isConnected)
   // const isHost = useSelector((res) => res.state.isHost)
   // const mapFile = useSelector((res) => res.state.img)
   // const [imageLoaded, setImageLoaded] = useState(false)
@@ -83,13 +83,20 @@ const Main = ({ socket }) => {
   const [isLoadImageDialogOpen, setIsLoadImageDialogOpen] = useState(false)
   const [userSavedImages, setUserSavedImages] = useState([])
 
-  const test = () => {
-    if (user !== null) {
-      addConnection(user.id, socket.id).then(() => {
-        dispatch(connectedAction())
-        dispatch(updateInRoom(false))
-        toast.success(CONNECT_SUCCESSFULL)
-      })
+  /**
+   * Auxiliary function to create a new connection after click on the connect button
+   * Retrieves the user email from the session storage
+   */
+  const connect = () => {
+    if (socket !== undefined && socket.id !== null) {
+      const user = JSON.parse(sessionStorage.getItem(SESSION_STORAGE_USER))
+      if (user !== null) {
+        addConnection(user.email, socket.id).then(() => {
+          dispatch(connectedAction())
+          dispatch(updateInRoom(false))
+          toast.success(CONNECT_SUCCESSFULL)
+        })
+      }
     }
   }
 
@@ -150,19 +157,10 @@ const Main = ({ socket }) => {
         icon: '🙋‍♀️',
       })
     })
+
+    socket.on(CONNECT, connect)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
-
-  socket.on(CONNECTED, test)
-
-  // socket.on(CONNECTED, () => {
-  //   console.log('connected', user, socket)
-  //   addConnection(user.id, socket.id).then(() => {
-  //     dispatch(connectedAction())
-  //     dispatch(updateInRoom(false))
-  //     toast.success(CONNECT_SUCCESSFULL)
-  //   })
-  // })
 
   useEffect(() => {
     if (!ctx) {

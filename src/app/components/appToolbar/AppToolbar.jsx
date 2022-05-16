@@ -37,11 +37,12 @@ import {
   APPTOOLBAR_JOIN,
   APPTOOLBAR_LOAD_MAP,
   APPTOOLBAR_LOGIN,
+  APPTOOLBAR_LOGOUT_BUTTON,
   APPTOOLBAR_SHOW_KEY,
   APPTOOLBAR_UPLOAD_FILE,
   CONNECT_SUCCESSFULL,
   DISCONNECT_SUCCESSFULL,
-} from '../../utils/literals.js'
+} from '../../shared/literals.js'
 
 import { Link } from 'react-router-dom'
 import {
@@ -125,6 +126,7 @@ const AppToolbar = ({
       } else {
         addConnection(user.email, socket.id).then(() => {
           dispatch(connectedAction())
+          dispatch(updateInRoom(false))
           toast.success(CONNECT_SUCCESSFULL)
         })
       }
@@ -153,7 +155,6 @@ const AppToolbar = ({
             toast.error('Se ha producido un error')
           })
       } else {
-        console.log(res)
         handleLoginSuccessAux(res.data.user)
       }
     })
@@ -229,6 +230,15 @@ const AppToolbar = ({
 
   const handleButtonColaboratorsPopup = () => {
     onOpenPopup()
+  }
+
+  /**
+   * Deletes the session storage data and reloads the page
+   */
+  const handleLogoutButton = () => {
+    sessionStorage.removeItem(SESSION_STORAGE_USER)
+    sessionStorage.removeItem(SESSION_STORAGE_LOGGED)
+    window.location.reload(false)
   }
 
   return (
@@ -330,6 +340,9 @@ const AppToolbar = ({
                   {!isConnected
                     ? CONNECT_BUTTON_CONNECT
                     : CONNECT_BUTTON_DISCONNECT}
+                </Button>
+                <Button onClick={handleLogoutButton} color="inherit">
+                  {APPTOOLBAR_LOGOUT_BUTTON}
                 </Button>
               </div>
             )}
