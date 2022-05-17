@@ -65,8 +65,6 @@ const Main = ({ socket }) => {
   const [ctx, setCtx] = useState(null)
   const [isPainting, setIsPainting] = useState(false)
   const [drawingFigure, setDrawingFigure] = useState(0)
-  // const [isErasing, setIsErasing] = useState(false)
-  // const [haveMapAux, setHaveMapAux] = useState(null)
   const [drawConfig, setDrawConfig] = useState({
     lineJoin: 'round',
     lineWidth: 2,
