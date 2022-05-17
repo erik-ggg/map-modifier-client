@@ -16,8 +16,6 @@ import toast from 'react-hot-toast'
 import {
   BROADCAST_DRAWING,
   CONNECT,
-  CONNECTED,
-  // BROADCAST_IMAGE,
   END_DRAWING,
   RECEIVING_DRAWING,
   RECEIVING_IMAGE,
@@ -63,10 +61,6 @@ const Main = ({ socket }) => {
   const inRoom = useSelector((res) => res.state.inRoom)
   const haveMap = useSelector((res) => res.state.haveMap)
   const user = useSelector((res) => res.state.user)
-  const isConnected = useSelector((res) => res.state.isConnected)
-  // const isHost = useSelector((res) => res.state.isHost)
-  // const mapFile = useSelector((res) => res.state.img)
-  // const [imageLoaded, setImageLoaded] = useState(false)
   const [mapFile, setMapFile] = useState(null)
   const [ctx, setCtx] = useState(null)
   const [isPainting, setIsPainting] = useState(false)
