@@ -99,6 +99,7 @@ const AppToolbar = ({
   displayLoadImagePopup,
   socket,
   setImage,
+  haveMap,
 }) => {
   const classes = useStyles()
   const dispatch = useDispatch()
@@ -110,7 +111,6 @@ const AppToolbar = ({
 
   const [anchorEl, setAnchorEl] = useState(null)
   const [targetConnectionId, setTargetConnectionId] = useState('')
-  const [haveMap, setHaveMapState] = useState(false)
 
   const handleConnectButton = () => {
     if (isConnected) {
@@ -193,7 +193,6 @@ const AppToolbar = ({
     const img = event.target.files[0]
     setImage(URL.createObjectURL(img))
     loadImageState()
-    setHaveMapState(true)
     dispatch(setHaveMap(true))
 
     const reader = new FileReader()
@@ -212,7 +211,6 @@ const AppToolbar = ({
 
   const handleLoadMap = () => {
     displayLoadImagePopup()
-    setHaveMapState(true) // TODO: pasar a estado redux
     setAnchorEl(null)
   }
 

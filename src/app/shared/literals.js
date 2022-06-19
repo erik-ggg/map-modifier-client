@@ -30,3 +30,7 @@ export const APPTOOLBAR_LOGOUT_BUTTON = 'Logout'
 
 export const GLOBAL_ADD = 'Add'
 export const GLOBAL_CLOSE = 'Close'
+
+// -------- TOAST MESSAGE --------
+export const ADD_COLABORATOR_NOT_FOUND =
+  'No se pudo encontrar el colaborador con ese email'

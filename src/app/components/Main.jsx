@@ -402,6 +402,7 @@ const Main = ({ socket }) => {
         saveImage={saveImage}
         socket={socket}
         setImage={setImage}
+        haveMap={haveMap}
       />
       {haveMap && (
         <EditorToolbar

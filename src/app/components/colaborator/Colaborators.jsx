@@ -44,7 +44,11 @@ import {
 import AlertComponent from '../alert/AlertComponent'
 import { updateInRoom } from '../../redux/slices/AppSlice.js'
 import { createTheme } from '@mui/material'
-import { GLOBAL_ADD, GLOBAL_CLOSE } from '../../shared/literals'
+import {
+  ADD_COLABORATOR_NOT_FOUND,
+  GLOBAL_ADD,
+  GLOBAL_CLOSE,
+} from '../../shared/literals'
 
 const tableIcons = {
   Add: forwardRef((props, ref) => <AddBox {...props} ref={ref} />),
@@ -133,7 +137,7 @@ const Colaborators = ({ socket }) => {
         })
         .catch((err) => {
           if (err.response.status === 404) {
-            toast.error('No se puedo encontrar el colaborador con ese email')
+            toast.error(ADD_COLABORATOR_NOT_FOUND)
           } else if (err.response.status === 400) {
             toast.error('El colaborador ya ha sido agregado')
           } else {
