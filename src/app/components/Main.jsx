@@ -15,6 +15,7 @@ import toast from 'react-hot-toast'
 
 import {
   BROADCAST_DRAWING,
+  BROADCAST_FIGURE,
   CONNECT,
   END_DRAWING,
   RECEIVING_DRAWING,
@@ -124,6 +125,18 @@ const Main = ({ socket }) => {
       }
     })
 
+    socket.on(BROADCAST_FIGURE, (res) => {
+      if (res.room !== socket.id) {
+        drawFigureReceived(
+          res.prevPosOffsetX,
+          res.prevPosOffsetY,
+          res.offsetX,
+          res.offsetY,
+          res.drawingFigure
+        )
+      }
+    })
+
     socket.on(SEND_IMAGE_AND_CANVAS_TO_CLIENT, (res) => {
       setMapFile(res.image)
 
@@ -198,34 +211,81 @@ const Main = ({ socket }) => {
   const endPaintEvent = ({ nativeEvent }) => {
     const { offsetX, offsetY } = nativeEvent
 
+    if (drawingFigure > 0) {
+      socket.emit(BROADCAST_FIGURE, {
+        prevPosOffsetX: prevPos.offsetX,
+        prevPosOffsetY: prevPos.offsetY,
+        offsetX,
+        offsetY,
+        room: roomKey !== null ? roomKey : socket.id,
+        drawingFigure,
+      })
+      if (drawingFigure === 1) {
+        canvasCtx.beginPath()
+        canvasCtx.moveTo(prevPos.offsetX, prevPos.offsetY)
+        canvasCtx.lineTo(offsetX, offsetY)
+        canvasCtx.stroke()
+        setDrawingFigure(0)
+      } else if (drawingFigure === 2) {
+        canvasCtx.beginPath()
+        canvasCtx.rect(
+          prevPos.offsetX,
+          prevPos.offsetY,
+          offsetX - prevPos.offsetX,
+          offsetY - prevPos.offsetY
+        )
+        ctx.stroke()
+        setDrawingFigure(0)
+      } else if (drawingFigure === 3) {
+        const r = Math.sqrt(
+          Math.pow(offsetX - prevPos.offsetX, 2) +
+            Math.pow(offsetY - prevPos.offsetY, 2)
+        )
+        canvasCtx.beginPath()
+        canvasCtx.arc(prevPos.offsetX, prevPos.offsetY, r, 0, 2 * Math.PI)
+        canvasCtx.stroke()
+        setDrawingFigure(0)
+      }
+    }
+
     if (isPainting) {
       setIsPainting(false)
       socket.emit(END_DRAWING, { room: roomKey !== null ? roomKey : socket.id })
     }
+  }
 
+  const drawFigureReceived = (
+    prevPosOffsetX,
+    prevPosOffsetY,
+    offsetX,
+    offsetY,
+    drawingFigure
+  ) => {
     if (drawingFigure === 1) {
-      setDrawingFigure(0)
-      canvasCtx.moveTo(prevPos.offsetX, prevPos.offsetY)
+      canvasCtx.beginPath()
+      canvasCtx.moveTo(prevPosOffsetX, prevPosOffsetY)
       canvasCtx.lineTo(offsetX, offsetY)
       canvasCtx.stroke()
+      setDrawingFigure(0)
     } else if (drawingFigure === 2) {
       canvasCtx.beginPath()
       canvasCtx.rect(
-        prevPos.offsetX,
-        prevPos.offsetY,
-        offsetX - prevPos.offsetX,
-        offsetY - prevPos.offsetY
+        prevPosOffsetX,
+        prevPosOffsetY,
+        offsetX - prevPosOffsetX,
+        offsetY - prevPosOffsetY
       )
-      ctx.stroke()
-    } else if (drawingFigure === 3) {
+      canvasCtx.stroke()
       setDrawingFigure(0)
+    } else if (drawingFigure === 3) {
       const r = Math.sqrt(
-        Math.pow(offsetX - prevPos.offsetX, 2) +
-          Math.pow(offsetY - prevPos.offsetY, 2)
+        Math.pow(offsetX - prevPosOffsetX, 2) +
+          Math.pow(offsetY - prevPosOffsetY, 2)
       )
       canvasCtx.beginPath()
-      canvasCtx.arc(prevPos.offsetX, prevPos.offsetY, r, 0, 2 * Math.PI)
+      canvasCtx.arc(prevPosOffsetX, prevPosOffsetY, r, 0, 2 * Math.PI)
       canvasCtx.stroke()
+      setDrawingFigure(0)
     }
   }
 
