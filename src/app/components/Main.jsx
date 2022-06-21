@@ -209,6 +209,12 @@ const Main = ({ socket }) => {
   }
 
   const endPaintEvent = ({ nativeEvent }) => {
+    if (isPainting) {
+      setIsPainting(false)
+    }
+  }
+
+  const onMouseUp = ({ nativeEvent }) => {
     const { offsetX, offsetY } = nativeEvent
 
     if (drawingFigure > 0) {
@@ -487,7 +493,7 @@ const Main = ({ socket }) => {
           ref={(ref) => (canvas = ref)}
           onMouseDown={onMouseDown}
           onMouseLeave={endPaintEvent}
-          onMouseUp={endPaintEvent}
+          onMouseUp={onMouseUp}
           onMouseMove={onMouseMove}
         ></canvas>
       </div>

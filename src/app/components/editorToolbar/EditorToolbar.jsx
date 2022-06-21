@@ -6,6 +6,7 @@ import CreateSharpIcon from '@mui/icons-material/CreateSharp'
 import CircleIcon from '@mui/icons-material/Circle'
 import Crop75Icon from '@mui/icons-material/Crop75'
 import CropSquareIcon from '@mui/icons-material/CropSquare'
+import HorizontalRuleIcon from '@mui/icons-material/HorizontalRule'
 import { BsFillEraserFill } from 'react-icons/bs'
 import { AiOutlineLine } from 'react-icons/ai'
 
@@ -80,7 +81,7 @@ export const EditorToolbar = ({ canvasCtx, drawConfig, setDrawingFigure }) => {
       <div className="shapesContainer">
         <div className="shapesButtonsContainer">
           <Button onClick={() => setDrawingFigure(1)}>
-            <CropSquareIcon />
+            <HorizontalRuleIcon />
           </Button>
           <Button onClick={() => setDrawingFigure(2)}>
             <Crop75Icon />
